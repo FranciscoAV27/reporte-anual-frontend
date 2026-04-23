@@ -1,0 +1,12 @@
+// src/app/features/auth/auth.routes.ts
+
+import { Routes } from '@angular/router';
+
+export const AUTH_ROUTES: Routes = [
+  {
+    path: 'login',
+    loadComponent: () =>
+      import('./login/login.component').then((c) => c.LoginComponent),
+  },
+  { path: '', redirectTo: 'login', pathMatch: 'full' },
+];

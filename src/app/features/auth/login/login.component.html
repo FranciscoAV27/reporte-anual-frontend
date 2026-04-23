@@ -1,0 +1,81 @@
+<!-- src/app/features/auth/login/login.component.html -->
+
+<div class="login-bg">
+  <div class="login-card">
+
+    <!-- Header institucional -->
+    <div class="brand">
+      <div class="brand-logo">UNPA</div>
+      <div class="brand-text">
+        <span class="brand-name">Universidad del Papaloapan</span>
+        <span class="brand-sub">Reporte Anual de Actividades Docentes</span>
+      </div>
+    </div>
+
+    <h1 class="titulo">Bienvenido</h1>
+    <p class="subtitulo">Ingresa con tu número de trabajo y contraseña</p>
+
+    <!-- Formulario -->
+    <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" novalidate>
+
+      <!-- Número de trabajo -->
+      <div class="field">
+        <label class="label" for="numeroTrabajo">NÚMERO DE TRABAJO</label>
+        <input
+          id="numeroTrabajo"
+          class="input"
+          [class.input--error]="numeroTrabajo?.invalid && numeroTrabajo?.touched"
+          type="text"
+          placeholder="UNPA-2024-001"
+          formControlName="numeroTrabajo"
+          autocomplete="username"
+        />
+        <span class="error-msg"
+          *ngIf="numeroTrabajo?.invalid && numeroTrabajo?.touched">
+          Este campo es obligatorio.
+        </span>
+      </div>
+
+      <!-- Contraseña -->
+      <div class="field">
+        <label class="label" for="contrasena">CONTRASEÑA</label>
+        <div class="input-wrapper">
+          <input
+            id="contrasena"
+            class="input"
+            [class.input--error]="contrasena?.invalid && contrasena?.touched"
+            [type]="mostrarContrasena ? 'text' : 'password'"
+            placeholder="••••••••"
+            formControlName="contrasena"
+            autocomplete="current-password"
+          />
+          <button
+            type="button"
+            class="toggle-pass"
+            (click)="mostrarContrasena = !mostrarContrasena"
+            [attr.aria-label]="mostrarContrasena ? 'Ocultar contraseña' : 'Mostrar contraseña'">
+            {{ mostrarContrasena ? '🙈' : '👁️' }}
+          </button>
+        </div>
+        <span class="error-msg"
+          *ngIf="contrasena?.invalid && contrasena?.touched">
+          Mínimo 6 caracteres.
+        </span>
+      </div>
+
+      <!-- Error del servidor -->
+      <div class="server-error" *ngIf="errorMensaje">
+        ⚠️ {{ errorMensaje }}
+      </div>
+
+      <!-- Submit -->
+      <button class="btn-submit" type="submit" [disabled]="cargando">
+        <span *ngIf="!cargando">Iniciar sesión →</span>
+        <span *ngIf="cargando">Verificando...</span>
+      </button>
+
+    </form>
+
+    <p class="footer-text">Sistema institucional · UNPA © 2026</p>
+  </div>
+</div>
