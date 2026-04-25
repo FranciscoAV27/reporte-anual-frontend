@@ -1,6 +1,6 @@
 // src/app/features/auth/login/login.component.ts
 
-import { Component, inject } from '@angular/core';
+import { Component, inject, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import {
   ReactiveFormsModule,
@@ -20,6 +20,7 @@ import { AuthService } from '../../../core/services/auth.service';
 export class LoginComponent {
   private readonly fb = inject(FormBuilder);
   private readonly authService = inject(AuthService);
+  private readonly cdRef = inject(ChangeDetectorRef);
 
   loginForm: FormGroup = this.fb.group({
     numeroTrabajo: ['', [Validators.required]],
@@ -42,14 +43,16 @@ export class LoginComponent {
     this.authService.login(this.loginForm.value).subscribe({
       next: () => {
         this.cargando = false;
+        this.cdRef.detectChanges();
         this.authService.redirigirSegunRol();
       },
       error: (err) => {
         this.cargando = false;
         this.errorMensaje =
-          err.status === 401
+          err.status === 401 || err.status === 404
             ? 'Número de trabajo o contraseña incorrectos.'
             : 'Error de conexión. Intenta más tarde.';
+        this.cdRef.detectChanges();
       },
     });
   }
