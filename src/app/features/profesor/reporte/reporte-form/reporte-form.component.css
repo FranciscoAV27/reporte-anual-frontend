@@ -1,0 +1,135 @@
+/* src/app/features/profesor/reporte-form/reporte-form.component.css */
+
+/* ── Topbar ── */
+.topbar {
+  background: var(--white);
+  border-bottom: 1px solid var(--border);
+  padding: 0 28px;
+  height: 60px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  box-shadow: var(--shadow-sm);
+}
+
+.topbar-brand { display: flex; align-items: center; gap: 12px; }
+
+.topbar-badge {
+  width: 36px; height: 36px;
+  background: linear-gradient(135deg, var(--teal), var(--teal-dark));
+  border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+  font-family: var(--font-display);
+  font-size: 13px; font-weight: 700; color: white;
+}
+
+.topbar-title {
+  font-family: var(--font-display);
+  font-size: 15px; color: var(--teal-dark); font-weight: 600; line-height: 1.2;
+}
+.topbar-title small {
+  display: block;
+  font-family: var(--font-body);
+  font-size: 10px; color: var(--ink-soft); font-weight: 400;
+}
+
+.topbar-divider { width: 1px; height: 28px; background: var(--border); margin: 0 4px; }
+
+.topbar-nav { display: flex; gap: 2px; flex: 1; }
+
+.topbar-nav-btn {
+  padding: 7px 13px; border: none; border-radius: var(--radius-sm);
+  background: transparent;
+  font-family: var(--font-body); font-size: 13px; font-weight: 500;
+  color: var(--ink-mid); cursor: pointer;
+  transition: all var(--transition); white-space: nowrap;
+}
+.topbar-nav-btn:hover { background: var(--teal-light); color: var(--teal-dark); }
+.topbar-nav-btn.active { background: var(--teal-light); color: var(--teal-dark); font-weight: 600; }
+
+.topbar-right { display: flex; align-items: center; gap: 10px; margin-left: auto; }
+
+.user-chip {
+  display: flex; align-items: center; gap: 8px;
+  padding: 6px 12px; background: var(--bg);
+  border-radius: 20px; border: 1px solid var(--border);
+}
+.user-avatar {
+  width: 26px; height: 26px; background: var(--teal);
+  border-radius: 50%; display: flex; align-items: center; justify-content: center;
+  font-size: 11px; font-weight: 700; color: white;
+}
+.user-info strong { display: block; font-size: 12px; color: var(--ink); }
+.user-info span { font-size: 10px; color: var(--ink-soft); }
+
+.btn-logout {
+  padding: 7px 14px; border: 1.5px solid var(--border);
+  border-radius: var(--radius-sm); background: white;
+  font-family: var(--font-body); font-size: 12px; font-weight: 500;
+  color: var(--ink-mid); cursor: pointer; transition: all var(--transition);
+}
+.btn-logout:hover { border-color: var(--danger); color: var(--danger); background: var(--danger-bg); }
+
+/* ── Main content ── */
+.main-content {
+  flex: 1; padding: 32px 28px;
+  max-width: 1240px; width: 100%; margin: 0 auto;
+}
+
+.page-header { margin-bottom: 28px; }
+.page-header h1 { font-family: var(--font-display); font-size: 26px; color: var(--ink); margin-bottom: 4px; }
+.page-header p { font-size: 14px; color: var(--ink-soft); }
+
+/* ── Acciones globales ── */
+.form-actions {
+  display: flex; gap: 12px; justify-content: flex-end;
+  padding: 20px 0; margin-top: 8px;
+}
+
+.btn {
+  display: inline-flex; align-items: center; gap: 7px;
+  padding: 10px 20px; border-radius: var(--radius-sm);
+  font-family: var(--font-body); font-size: 14px; font-weight: 600;
+  cursor: pointer; border: none; transition: all var(--transition);
+}
+.btn-teal {
+  background: linear-gradient(135deg, var(--teal), var(--teal-dark));
+  color: white; box-shadow: 0 2px 8px rgba(61,140,124,.25);
+}
+.btn-teal:hover:not(:disabled) { transform: translateY(-1px); box-shadow: 0 4px 16px rgba(61,140,124,.35); }
+.btn-teal:disabled { opacity: 0.6; cursor: not-allowed; }
+
+/* ── Toast ── */
+.toast {
+  position: fixed; bottom: 24px; right: 24px;
+  background: var(--ink); color: white;
+  padding: 14px 20px; border-radius: var(--radius);
+  font-size: 13px; box-shadow: var(--shadow-lg);
+  z-index: 9999;
+  transform: translateY(80px); opacity: 0;
+  transition: all .3s ease; pointer-events: none;
+}
+.toast.show { transform: translateY(0); opacity: 1; }
+.toast.success { background: var(--success); }
+.toast.error   { background: var(--danger); }
+
+/* ── Estados feedback ── */
+.feedback-state {
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  min-height: 60vh; gap: 16px;
+  font-size: 14px; color: var(--ink-soft);
+}
+.feedback-state.error { color: var(--danger); }
+
+.spinner {
+  width: 36px; height: 36px;
+  border: 3px solid var(--teal-mid);
+  border-top-color: var(--teal);
+  border-radius: 50%;
+  animation: spin .7s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }

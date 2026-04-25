@@ -1,6 +1,6 @@
 /* You can add global styles to this file, and also import other style files */
 /* src/styles.css */
-
+/* 
 * {
   margin: 0;
   padding: 0;
@@ -10,4 +10,48 @@
 html, body {
   height: 100%;
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+} */
+
+/* src/styles.css */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --teal:         #3d8c7c;
+  --teal-dark:    #2a6558;
+  --teal-light:   #e8f5f2;
+  --teal-mid:     #c2e3dc;
+  --gold:         #c9933a;
+  --gold-light:   #fdf4e7;
+  --ink:          #1a2430;
+  --ink-mid:      #3d4f5e;
+  --ink-soft:     #6b7f8e;
+  --border:       #d6e4e1;
+  --bg:           #f5f8f7;
+  --white:        #ffffff;
+  --danger:       #c0392b;
+  --danger-bg:    #fdf0ef;
+  --success:      #27715e;
+  --success-bg:   #eaf5f1;
+  --warn:         #b07a1c;
+  --warn-bg:      #fdf4e2;
+  --pending:      #5060a8;
+  --pending-bg:   #eef0fa;
+  --radius-sm:    6px;
+  --radius:       12px;
+  --radius-lg:    18px;
+  --shadow-sm:    0 1px 4px rgba(0,0,0,.07);
+  --shadow:       0 4px 16px rgba(0,0,0,.10);
+  --shadow-lg:    0 8px 32px rgba(0,0,0,.13);
+  --font-display: 'Playfair Display', Georgia, serif;
+  --font-body:    'DM Sans', sans-serif;
+  --font-mono:    'DM Mono', monospace;
+  --transition:   .2s ease;
+}
+
+html, body {
+  font-family: var(--font-body);
+  background: var(--bg);
+  color: var(--ink);
+  font-size: 15px;
+  min-height: 100vh;
 }

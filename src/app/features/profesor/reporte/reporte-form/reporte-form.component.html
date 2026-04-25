@@ -1,0 +1,62 @@
+<ng-container *ngIf="!cargando && !errorMsg">
+
+  <header class="topbar">
+    <div class="topbar-brand">
+      <div class="topbar-badge">UNPA</div>
+      <div class="topbar-title">
+        Universidad del Papaloapan
+        <small>Reporte Anual de Actividades Docentes</small>
+      </div>
+    </div>
+    <div class="topbar-divider"></div>
+    <nav class="topbar-nav">
+      <button class="topbar-nav-btn active">1. Docencia</button>
+    </nav>
+    <div class="topbar-right">
+      <div class="user-chip">
+        <div class="user-avatar">{{ inicialesProfesor }}</div>
+        <div class="user-info">
+          <strong>{{ reporte?.profesorNombre }}</strong>
+          <span>Profesor</span>
+        </div>
+      </div>
+      <button class="btn-logout" (click)="logout()">Cerrar sesión</button>
+    </div>
+  </header>
+
+  <main class="main-content">
+    <div class="page-header">
+      <h1>Reporte Anual {{ anioActual }}</h1>
+      <p>Complete las secciones de su reporte de actividades docentes</p>
+    </div>
+
+    <app-docencia
+      *ngIf="reporte"
+      [reporteId]="reporte.id"
+      [problemasDocencia]="textosForm.get('problemasDocencia')!.value"
+      [oportunidadesDocencia]="textosForm.get('oportunidadesDocencia')!.value"
+      (problemasChange)="textosForm.get('problemasDocencia')!.setValue($event)"
+      (oportunidadesChange)="textosForm.get('oportunidadesDocencia')!.setValue($event)">
+    </app-docencia>
+
+    <div class="form-actions">
+      <button class="btn btn-teal" (click)="guardarBorrador()" [disabled]="guardando">
+        {{ guardando ? 'Guardando...' : '💾  Guardar borrador' }}
+      </button>
+    </div>
+  </main>
+
+</ng-container>
+
+<div class="feedback-state" *ngIf="cargando">
+  <div class="spinner"></div>
+  <p>Cargando reporte...</p>
+</div>
+
+<div class="feedback-state error" *ngIf="errorMsg">
+  <p>⚠️ {{ errorMsg }}</p>
+</div>
+
+<div class="toast" [class.show]="toastMsg" [class.success]="toastTipo === 'success'" [class.error]="toastTipo === 'error'">
+  {{ toastMsg }}
+</div>
