@@ -1,0 +1,77 @@
+<!-- src/app/features/profesor/sections/distribucion-tiempo/distribucion-tiempo.component.html -->
+<div class="section-card" [class.collapsed]="colapsado">
+
+  <div class="section-card-header" (click)="toggleSeccion()">
+    <div class="section-number">7</div>
+    <h3>Distribución de Tiempo</h3>
+    <span class="chevron">▼</span>
+  </div>
+
+  <div class="section-card-body">
+
+    <!-- Cargando filas iniciales -->
+    <div class="dist-loading" *ngIf="cargando">
+      <div class="spinner-sm"></div>
+      <span>Preparando tabla...</span>
+    </div>
+
+    <ng-container *ngIf="!cargando && tablaForm">
+
+      <p class="dist-desc">
+        Distribución promedio y aproximada de tiempo (horas) dedicada por semana
+        a la realización de actividades académicas durante el periodo del reporte.
+      </p>
+
+      <div class="data-table-wrapper" [formGroup]="tablaForm">
+        <table class="data-table dist-table">
+          <thead>
+            <tr>
+              <th class="col-actividad">Actividad Académica</th>
+              <th class="col-horas">Ciclo (oct–feb)</th>
+              <th class="col-horas">Ciclo (mar–jul)</th>
+              <th class="col-horas">Verano (jul–sept)</th>
+            </tr>
+          </thead>
+          <tbody>
+
+            <ng-container *ngFor="let fila of filas">
+              <tr [formGroupName]="'fila_' + fila.id" class="dist-row">
+                <td class="actividad-cell">{{ fila.actividadAcademica }}</td>
+                <td><input class="ti ti-horas" type="number" min="0" step="0.5" formControlName="horasCicloOi"></td>
+                <td><input class="ti ti-horas" type="number" min="0" step="0.5" formControlName="horasCicloPv"></td>
+                <td><input class="ti ti-horas" type="number" min="0" step="0.5" formControlName="horasVerano"></td>
+              </tr>
+            </ng-container>
+
+            <!-- Fila de totales -->
+            <tr class="dist-total-row">
+              <td class="actividad-cell"><strong>Suma</strong></td>
+              <td class="mono"><strong>{{ totalOi }}</strong></td>
+              <td class="mono"><strong>{{ totalPv }}</strong></td>
+              <td class="mono"><strong>{{ totalVerano }}</strong></td>
+            </tr>
+
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Fecha de entrega -->
+      <div class="fecha-entrega">
+        <span class="field-label">Fecha de entrega:</span>
+        <span class="fecha-valor" *ngIf="reporte?.enviadoEn">{{ fechaEnvio }}</span>
+        <span class="fecha-pendiente" *ngIf="!reporte?.enviadoEn">
+          Se asignará automáticamente al enviar el reporte
+        </span>
+      </div>
+
+      <!-- Botón guardar distribución -->
+      <div class="dist-actions">
+        <button class="btn btn-teal" (click)="guardar()" [disabled]="guardando">
+          {{ guardando ? 'Guardando...' : '💾 Guardar distribución' }}
+        </button>
+      </div>
+
+    </ng-container>
+
+  </div>
+</div>

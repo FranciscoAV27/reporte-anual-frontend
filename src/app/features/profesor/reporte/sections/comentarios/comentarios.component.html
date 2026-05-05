@@ -1,0 +1,23 @@
+<!-- src/app/features/profesor/sections/comentarios/comentarios.component.html -->
+<div class="section-card" [class.collapsed]="colapsado">
+
+  <div class="section-card-header" (click)="toggleSeccion()">
+    <div class="section-number">6</div>
+    <h3>Comentarios Generales</h3>
+    <span class="chevron">▼</span>
+  </div>
+
+  <div class="section-card-body">
+    <div class="text-field-group">
+      <label class="field-label">Comentarios, observaciones o aclaraciones adicionales</label>
+      <textarea
+        class="field-textarea"
+        placeholder="Escriba aquí sus comentarios generales..."
+        [value]="comentarios"
+        (input)="comentariosChange.emit($any($event.target).value)"
+        rows="6">
+      </textarea>
+    </div>
+  </div>
+
+</div>

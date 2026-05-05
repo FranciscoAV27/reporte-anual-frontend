@@ -7,12 +7,20 @@ import { ReporteService } from '../../services/reporte.service';
 import { AuthService } from '../../../../core/services/auth.service';
 import { ReporteResponse } from '../../../../shared/models/reporte/reporte.model';
 import { DocenciaComponent } from '../sections/docencia/docencia.component';
+import { FormacionRhComponent } from '../sections/formacion-rh/formacion-rh.component';
+import { InvestigacionComponent } from '../sections/investigacion/investigacion.component';
+import { GestionAcademicaComponent } from '../sections/gestion-academica/gestion-academica.component';
+import { DifusionComponent } from '../sections/difusion/difusion.component';
+import { ComentariosComponent } from '../sections/comentarios/comentarios.component';
+import { DistribucionTiempoComponent } from '../sections/distribucion-tiempo/distribucion-tiempo.component';
+
+
 
 
 @Component({
   selector: 'app-reporte-form',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, DocenciaComponent],
+  imports: [CommonModule, ReactiveFormsModule, DocenciaComponent, FormacionRhComponent, InvestigacionComponent, GestionAcademicaComponent, DifusionComponent, ComentariosComponent, DistribucionTiempoComponent],
   templateUrl: './reporte-form.component.html',
   styleUrls: ['./reporte-form.component.css']
 })
@@ -36,6 +44,9 @@ export class ReporteFormComponent implements OnInit {
   textosForm: FormGroup = this.fb.group({
     problemasDocencia: [''],
     oportunidadesDocencia: [''],
+    problemasInvestigacion: [''],
+    oportunidadesInvestigacion: [''],
+    comentariosGenerales:       [''], // ← nuevo
   });
 
   // ngOnInit(): void {
@@ -165,7 +176,10 @@ export class ReporteFormComponent implements OnInit {
   private poblarTextos(r: ReporteResponse): void {
     this.textosForm.patchValue({
       problemasDocencia: r.problemasDocencia ?? '',
-      oportunidadesDocencia: r.oportunidadesDocencia ?? ''
+      oportunidadesDocencia: r.oportunidadesDocencia ?? '',
+      problemasInvestigacion:     r.problemasInvestigacion ?? '',
+      oportunidadesInvestigacion: r.oportunidadesInvestigacion ?? '',
+      comentariosGenerales:       r.comentariosGenerales       ?? '',
     });
   }
 

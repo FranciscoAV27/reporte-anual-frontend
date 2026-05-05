@@ -1,0 +1,86 @@
+<!-- src/app/features/profesor/sections/difusion/difusion.component.html -->
+<div class="section-card" [class.collapsed]="colapsado">
+
+  <div class="section-card-header" (click)="toggleSeccion()">
+    <div class="section-number">5</div>
+    <h3>Difusión</h3>
+    <span class="chevron">▼</span>
+  </div>
+
+  <div class="section-card-body">
+
+    <h4 class="subsection-title">5.1 Actividades de difusión</h4>
+
+    <div class="data-table-wrapper">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Nombre de la actividad</th>
+            <th>Período inicio</th>
+            <th>Período fin</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+
+          <tr *ngIf="actividades.length === 0 && !mostrarForm">
+            <td colspan="5" class="empty-row">Sin actividades de difusión registradas</td>
+          </tr>
+
+          <ng-container *ngFor="let a of actividades">
+
+            <!-- Fila lectura -->
+            <tr *ngIf="editandoId !== a.id">
+              <td class="mono">{{ a.numActividad }}</td>
+              <td>{{ a.nombre }}</td>
+              <td class="mono">{{ a.periodoInicio ?? '—' }}</td>
+              <td class="mono">{{ a.periodoFin    ?? '—' }}</td>
+              <td>
+                <div class="row-actions">
+                  <button class="btn-row-edit" (click)="activarEdit(a)">✏️</button>
+                  <button class="btn-row-del"  (click)="eliminar(a.id)">✕</button>
+                </div>
+              </td>
+            </tr>
+
+            <!-- Fila edición -->
+            <tr *ngIf="editandoId === a.id && formEdit" [formGroup]="formEdit" class="edit-row">
+              <td><input class="ti" type="number" min="1" formControlName="numActividad"  style="width:55px"></td>
+              <td><input class="ti" type="text"         formControlName="nombre"></td>
+              <td><input class="ti" type="date"         formControlName="periodoInicio"></td>
+              <td><input class="ti" type="date"         formControlName="periodoFin"></td>
+              <td>
+                <div class="row-actions">
+                  <button class="btn-row-save"   (click)="guardar(a.id)">✓</button>
+                  <button class="btn-row-cancel" (click)="editandoId = null">✕</button>
+                </div>
+              </td>
+            </tr>
+
+          </ng-container>
+
+          <!-- Fila nueva -->
+          <tr *ngIf="mostrarForm" [formGroup]="formNuevo" class="new-row">
+            <td><input class="ti" type="number" min="1" formControlName="numActividad"  placeholder="#"  style="width:55px"></td>
+            <td><input class="ti" type="text"         formControlName="nombre"          placeholder="Nombre de la actividad"></td>
+            <td><input class="ti" type="date"         formControlName="periodoInicio"></td>
+            <td><input class="ti" type="date"         formControlName="periodoFin"></td>
+            <td>
+              <div class="row-actions">
+                <button class="btn-row-save"   (click)="agregar()">✓</button>
+                <button class="btn-row-cancel" (click)="cancelar()">✕</button>
+              </div>
+            </td>
+          </tr>
+
+        </tbody>
+      </table>
+    </div>
+
+    <button class="btn-add-row" (click)="abrir()" *ngIf="!mostrarForm">
+      + Agregar actividad
+    </button>
+
+  </div>
+</div>

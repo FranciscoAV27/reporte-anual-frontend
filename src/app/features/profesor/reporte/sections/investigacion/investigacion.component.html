@@ -1,0 +1,344 @@
+<!-- src/app/features/profesor/reporte/sections/investigacion/investigacion.component.html -->
+<div class="section-card" [class.collapsed]="colapsado">
+
+  <div class="section-card-header" (click)="toggleSeccion()">
+    <div class="section-number">3</div>
+    <h3>Investigación y/o Promoción al Desarrollo</h3>
+    <span class="chevron">▼</span>
+  </div>
+
+  <div class="section-card-body">
+
+    <!-- ══ 3.1 Proyectos de investigación ════════════════════ -->
+    <h4 class="subsection-title">3.1 Proyectos de investigación</h4>
+
+    <div class="data-table-wrapper">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>#</th><th>Título</th><th>Resp.</th><th>Fase aprobación</th>
+            <th>Instancia</th><th>F. Inicio</th><th>F. Term.</th><th>F. Reprog.</th><th>Avance %</th><th></th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngIf="proyectos.length === 0 && !mostrarFormProyecto">
+            <td colspan="10" class="empty-row">Sin proyectos registrados</td>
+          </tr>
+
+          <ng-container *ngFor="let p of proyectos">
+            <tr *ngIf="editandoProyectoId !== p.id">
+              <td class="mono">{{ p.numProyecto }}</td>
+              <td>{{ p.titulo }}</td>
+              <td class="mono">{{ p.responsabilidad }}</td>
+              <td class="mono">{{ p.faseAprobacion }}</td>
+              <td class="mono">{{ p.instancia }}</td>
+              <td class="mono">{{ p.fechaInicio      ?? '—' }}</td>
+              <td class="mono">{{ p.fechaTerminacion ?? '—' }}</td>
+              <td class="mono">{{ p.fechaReprog      ?? '—' }}</td>
+              <td class="mono">{{ p.avancePorcentaje }}%</td>
+              <td>
+                <div class="row-actions">
+                  <button class="btn-row-edit" (click)="activarEditProyecto(p)">✏️</button>
+                  <button class="btn-row-del"  (click)="eliminarProyecto(p.id)">✕</button>
+                </div>
+              </td>
+            </tr>
+            <tr *ngIf="editandoProyectoId === p.id && formEditProyecto" [formGroup]="formEditProyecto" class="edit-row">
+              <td><input class="ti" type="number" min="1" formControlName="numProyecto"      style="width:50px"></td>
+              <td><input class="ti" type="text"         formControlName="titulo"></td>
+              <td>
+                <select class="ti" formControlName="responsabilidad">
+                  <option *ngFor="let o of responsabilidadOpciones" [value]="o.val">{{ o.val }}</option>
+                </select>
+              </td>
+              <td>
+                <select class="ti" formControlName="faseAprobacion">
+                  <option *ngFor="let o of faseAprobacionOpciones" [value]="o.val">{{ o.val }}</option>
+                </select>
+              </td>
+              <td>
+                <select class="ti" formControlName="instancia">
+                  <option *ngFor="let o of instanciaOpciones" [value]="o.val">{{ o.val }}</option>
+                </select>
+              </td>
+              <td><input class="ti" type="date" formControlName="fechaInicio"></td>
+              <td><input class="ti" type="date" formControlName="fechaTerminacion"></td>
+              <td><input class="ti" type="date" formControlName="fechaReprog"></td>
+              <td><input class="ti" type="number" min="0" max="100" formControlName="avancePorcentaje" style="width:60px"></td>
+              <td>
+                <div class="row-actions">
+                  <button class="btn-row-save"   (click)="guardarProyecto(p.id)">✓</button>
+                  <button class="btn-row-cancel" (click)="editandoProyectoId = null">✕</button>
+                </div>
+              </td>
+            </tr>
+          </ng-container>
+
+          <tr *ngIf="mostrarFormProyecto" [formGroup]="formNuevoProyecto" class="new-row">
+            <td><input class="ti" type="number" min="1" formControlName="numProyecto"      placeholder="#"  style="width:50px"></td>
+            <td><input class="ti" type="text"         formControlName="titulo"             placeholder="Título del proyecto"></td>
+            <td>
+              <select class="ti" formControlName="responsabilidad">
+                <option *ngFor="let o of responsabilidadOpciones" [value]="o.val">{{ o.label }}</option>
+              </select>
+            </td>
+            <td>
+              <select class="ti" formControlName="faseAprobacion">
+                <option *ngFor="let o of faseAprobacionOpciones" [value]="o.val">{{ o.label }}</option>
+              </select>
+            </td>
+            <td>
+              <select class="ti" formControlName="instancia">
+                <option *ngFor="let o of instanciaOpciones" [value]="o.val">{{ o.label }}</option>
+              </select>
+            </td>
+            <td><input class="ti" type="date" formControlName="fechaInicio"></td>
+            <td><input class="ti" type="date" formControlName="fechaTerminacion"></td>
+            <td><input class="ti" type="date" formControlName="fechaReprog"></td>
+            <td><input class="ti" type="number" min="0" max="100" formControlName="avancePorcentaje" placeholder="%" style="width:60px"></td>
+            <td>
+              <div class="row-actions">
+                <button class="btn-row-save"   (click)="agregarProyecto()">✓</button>
+                <button class="btn-row-cancel" (click)="cancelarFormProyecto()">✕</button>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <button class="btn-add-row" (click)="abrirFormProyecto()" *ngIf="!mostrarFormProyecto">
+      + Agregar proyecto
+    </button>
+
+    <hr class="section-divider">
+
+    <!-- ══ 3.1.1 Indicadores cuantitativos ═══════════════════ -->
+    <h4 class="subsection-title">3.1.1 Indicadores cuantitativos de avance</h4>
+
+    <div class="data-table-wrapper">
+      <table class="data-table">
+        <thead>
+          <tr><th># Proyecto</th><th># Indicador</th><th>Descripción</th><th></th></tr>
+        </thead>
+        <tbody>
+          <tr *ngIf="indicadores.length === 0 && !mostrarFormIndicador">
+            <td colspan="4" class="empty-row">Sin indicadores registrados</td>
+          </tr>
+
+          <ng-container *ngFor="let i of indicadores">
+            <tr *ngIf="editandoIndicadorId !== i.id">
+              <td class="mono">{{ i.numProyecto }}</td>
+              <td class="mono">{{ i.numIndicador }}</td>
+              <td>{{ i.descripcion }}</td>
+              <td>
+                <div class="row-actions">
+                  <button class="btn-row-edit" (click)="activarEditIndicador(i)">✏️</button>
+                  <button class="btn-row-del"  (click)="eliminarIndicador(i.proyectoId, i.id)">✕</button>
+                </div>
+              </td>
+            </tr>
+            <tr *ngIf="editandoIndicadorId === i.id && formEditIndicador" [formGroup]="formEditIndicador" class="edit-row">
+              <td>
+                <select class="ti" formControlName="numProyecto" style="width:80px">
+                  <option *ngFor="let p of proyectos" [value]="p.numProyecto">{{ p.numProyecto }}</option>
+                </select>
+              </td>
+              <td><input class="ti" type="number" min="1" formControlName="numIndicador" style="width:70px"></td>
+              <td><input class="ti" type="text"         formControlName="descripcion"></td>
+              <td>
+                <div class="row-actions">
+                  <button class="btn-row-save"   (click)="guardarIndicador(i)">✓</button>
+                  <button class="btn-row-cancel" (click)="editandoIndicadorId = null">✕</button>
+                </div>
+              </td>
+            </tr>
+          </ng-container>
+
+          <tr *ngIf="mostrarFormIndicador" [formGroup]="formNuevoIndicador" class="new-row">
+            <td>
+              <select class="ti" formControlName="numProyecto" style="width:80px">
+                <option *ngFor="let p of proyectos" [value]="p.numProyecto">{{ p.numProyecto }} — {{ p.titulo | slice:0:20 }}</option>
+              </select>
+            </td>
+            <td><input class="ti" type="number" min="1" formControlName="numIndicador" placeholder="#" style="width:70px"></td>
+            <td><input class="ti" type="text"         formControlName="descripcion"   placeholder="Descripción del indicador"></td>
+            <td>
+              <div class="row-actions">
+                <button class="btn-row-save"   (click)="agregarIndicador()">✓</button>
+                <button class="btn-row-cancel" (click)="cancelarFormIndicador()">✕</button>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <button class="btn-add-row" (click)="abrirFormIndicador()" *ngIf="!mostrarFormIndicador" [disabled]="proyectos.length === 0" [title]="proyectos.length === 0 ? 'Primero agrega un proyecto' : ''">
+      + Agregar indicador
+    </button>
+
+    <hr class="section-divider">
+
+    <!-- ══ 3.2 Publicaciones ══════════════════════════════════ -->
+    <h4 class="subsection-title">3.2 Publicación de artículos</h4>
+
+    <div class="data-table-wrapper">
+      <table class="data-table">
+        <thead>
+          <tr><th>#</th><th>Título</th><th>Revista</th><th>Fase</th><th>Año</th><th></th></tr>
+        </thead>
+        <tbody>
+          <tr *ngIf="publicaciones.length === 0 && !mostrarFormPublicacion">
+            <td colspan="6" class="empty-row">Sin publicaciones registradas</td>
+          </tr>
+
+          <ng-container *ngFor="let p of publicaciones">
+            <tr *ngIf="editandoPublicacionId !== p.id">
+              <td class="mono">{{ p.numPublicacion }}</td>
+              <td>{{ p.titulo }}</td>
+              <td>{{ p.revista }}</td>
+              <td><span class="badge-fase" [class]="'fase-' + p.fase">{{ p.fase === 'P' ? 'Publicado' : p.fase === 'A' ? 'Aceptado' : 'Revisión' }}</span></td>
+              <td class="mono">{{ p.anio }}</td>
+              <td>
+                <div class="row-actions">
+                  <button class="btn-row-edit" (click)="activarEditPublicacion(p)">✏️</button>
+                  <button class="btn-row-del"  (click)="eliminarPublicacion(p.id)">✕</button>
+                </div>
+              </td>
+            </tr>
+            <tr *ngIf="editandoPublicacionId === p.id && formEditPublicacion" [formGroup]="formEditPublicacion" class="edit-row">
+              <td><input class="ti" type="number" min="1" formControlName="numPublicacion" style="width:50px"></td>
+              <td><input class="ti" type="text"         formControlName="titulo"></td>
+              <td><input class="ti" type="text"         formControlName="revista"></td>
+              <td>
+                <select class="ti" formControlName="fase">
+                  <option *ngFor="let o of fasePublicacionOpciones" [value]="o.val">{{ o.label }}</option>
+                </select>
+              </td>
+              <td><input class="ti" type="number" min="2000" max="2100" formControlName="anio" style="width:70px"></td>
+              <td>
+                <div class="row-actions">
+                  <button class="btn-row-save"   (click)="guardarPublicacion(p.id)">✓</button>
+                  <button class="btn-row-cancel" (click)="editandoPublicacionId = null">✕</button>
+                </div>
+              </td>
+            </tr>
+          </ng-container>
+
+          <tr *ngIf="mostrarFormPublicacion" [formGroup]="formNuevaPublicacion" class="new-row">
+            <td><input class="ti" type="number" min="1" formControlName="numPublicacion" placeholder="#"     style="width:50px"></td>
+            <td><input class="ti" type="text"         formControlName="titulo"           placeholder="Título del artículo"></td>
+            <td><input class="ti" type="text"         formControlName="revista"          placeholder="Nombre de la revista"></td>
+            <td>
+              <select class="ti" formControlName="fase">
+                <option *ngFor="let o of fasePublicacionOpciones" [value]="o.val">{{ o.label }}</option>
+              </select>
+            </td>
+            <td><input class="ti" type="number" min="2000" max="2100" formControlName="anio" style="width:70px"></td>
+            <td>
+              <div class="row-actions">
+                <button class="btn-row-save"   (click)="agregarPublicacion()">✓</button>
+                <button class="btn-row-cancel" (click)="cancelarFormPublicacion()">✕</button>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <button class="btn-add-row" (click)="abrirFormPublicacion()" *ngIf="!mostrarFormPublicacion">
+      + Agregar publicación
+    </button>
+
+    <hr class="section-divider">
+
+    <!-- ══ 3.3 Promoción al desarrollo ═══════════════════════ -->
+    <h4 class="subsection-title">3.3 Promoción al desarrollo</h4>
+
+    <div class="data-table-wrapper">
+      <table class="data-table">
+        <thead>
+          <tr><th>#</th><th>Actividad</th><th>Institución solicitante</th><th>Horas req.</th><th>Producto</th><th></th></tr>
+        </thead>
+        <tbody>
+          <tr *ngIf="desarrollo.length === 0 && !mostrarFormDesarrollo">
+            <td colspan="6" class="empty-row">Sin actividades de desarrollo registradas</td>
+          </tr>
+
+          <ng-container *ngFor="let d of desarrollo">
+            <tr *ngIf="editandoDesarrolloId !== d.id">
+              <td class="mono">{{ d.numActividad }}</td>
+              <td>{{ d.actividad }}</td>
+              <td>{{ d.institucionSolicitante }}</td>
+              <td class="mono">{{ d.horasRequeridas }}</td>
+              <td>{{ d.producto ?? '—' }}</td>
+              <td>
+                <div class="row-actions">
+                  <button class="btn-row-edit" (click)="activarEditDesarrollo(d)">✏️</button>
+                  <button class="btn-row-del"  (click)="eliminarDesarrollo(d.id)">✕</button>
+                </div>
+              </td>
+            </tr>
+            <tr *ngIf="editandoDesarrolloId === d.id && formEditDesarrollo" [formGroup]="formEditDesarrollo" class="edit-row">
+              <td><input class="ti" type="number" min="1" formControlName="numActividad"           style="width:50px"></td>
+              <td><input class="ti" type="text"         formControlName="actividad"></td>
+              <td><input class="ti" type="text"         formControlName="institucionSolicitante"></td>
+              <td><input class="ti" type="number" min="0" formControlName="horasRequeridas"        style="width:70px"></td>
+              <td><input class="ti" type="text"         formControlName="producto"  placeholder="Opcional"></td>
+              <td>
+                <div class="row-actions">
+                  <button class="btn-row-save"   (click)="guardarDesarrollo(d.id)">✓</button>
+                  <button class="btn-row-cancel" (click)="editandoDesarrolloId = null">✕</button>
+                </div>
+              </td>
+            </tr>
+          </ng-container>
+
+          <tr *ngIf="mostrarFormDesarrollo" [formGroup]="formNuevoDesarrollo" class="new-row">
+            <td><input class="ti" type="number" min="1" formControlName="numActividad"            placeholder="#"  style="width:50px"></td>
+            <td><input class="ti" type="text"         formControlName="actividad"                 placeholder="Nombre de la actividad"></td>
+            <td><input class="ti" type="text"         formControlName="institucionSolicitante"    placeholder="Institución"></td>
+            <td><input class="ti" type="number" min="0" formControlName="horasRequeridas"         placeholder="Hrs" style="width:70px"></td>
+            <td><input class="ti" type="text"         formControlName="producto"                  placeholder="Opcional"></td>
+            <td>
+              <div class="row-actions">
+                <button class="btn-row-save"   (click)="agregarDesarrollo()">✓</button>
+                <button class="btn-row-cancel" (click)="cancelarFormDesarrollo()">✕</button>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <button class="btn-add-row" (click)="abrirFormDesarrollo()" *ngIf="!mostrarFormDesarrollo">
+      + Agregar actividad de desarrollo
+    </button>
+
+    <hr class="section-divider">
+
+    <!-- ══ 3.4 Problemas y oportunidades ══════════════════════ -->
+    <h4 class="subsection-title">3.4 Problemas y oportunidades en investigación</h4>
+
+    <div class="text-fields-row">
+      <div class="text-field-group">
+        <label class="field-label">Oportunidades</label>
+        <textarea class="field-textarea" rows="4"
+          placeholder="Aspectos que fomentan el desarrollo de la investigación..."
+          [value]="oportunidadesInvestigacion"
+          (input)="oportunidadesChange.emit($any($event.target).value)">
+        </textarea>
+      </div>
+      <div class="text-field-group">
+        <label class="field-label">Problemas</label>
+        <textarea class="field-textarea" rows="4"
+          placeholder="Dificultades que obstaculizan el desarrollo de la investigación..."
+          [value]="problemasInvestigacion"
+          (input)="problemasChange.emit($any($event.target).value)">
+        </textarea>
+      </div>
+    </div>
+
+  </div>
+</div>

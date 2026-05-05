@@ -39,6 +39,42 @@
       (oportunidadesChange)="textosForm.get('oportunidadesDocencia')!.setValue($event)">
     </app-docencia>
 
+    <app-formacion-rh
+      *ngIf="reporte"
+      [reporteId]="reporte.id">
+    </app-formacion-rh>
+
+    <app-investigacion
+      *ngIf="reporte"
+      [reporteId]="reporte.id"
+      [problemasInvestigacion]="textosForm.get('problemasInvestigacion')!.value"
+      [oportunidadesInvestigacion]="textosForm.get('oportunidadesInvestigacion')!.value"
+      (problemasChange)="textosForm.get('problemasInvestigacion')!.setValue($event)"
+      (oportunidadesChange)="textosForm.get('oportunidadesInvestigacion')!.setValue($event)">
+    </app-investigacion>
+
+    <app-gestion-academica
+      *ngIf="reporte"
+      [reporteId]="reporte.id">
+    </app-gestion-academica>
+
+    <app-difusion
+      *ngIf="reporte"
+      [reporteId]="reporte.id">
+    </app-difusion>
+
+    <app-comentarios
+      *ngIf="reporte"
+      [comentarios]="textosForm.get('comentariosGenerales')!.value"
+      (comentariosChange)="textosForm.get('comentariosGenerales')!.setValue($event)">
+    </app-comentarios>
+
+    <app-distribucion-tiempo
+      *ngIf="reporte"
+      [reporteId]="reporte.id"
+      [reporte]="reporte">
+    </app-distribucion-tiempo>
+
     <div class="form-actions">
       <button class="btn btn-teal" (click)="guardarBorrador()" [disabled]="guardando">
         {{ guardando ? 'Guardando...' : '💾  Guardar borrador' }}
