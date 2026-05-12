@@ -1,5 +1,5 @@
 // src/app/features/profesor/sections/distribucion-tiempo/distribucion-tiempo.component.ts
-import { Component, Input, OnInit, inject, ChangeDetectorRef } from '@angular/core';
+import { Component, Input, OnInit, inject, ChangeDetectorRef, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { DistribucionTiempoService } from '../../../services/distribucion-tiempo.service';
@@ -17,6 +17,7 @@ import { forkJoin, of } from 'rxjs';
 export class DistribucionTiempoComponent implements OnInit {
   @Input() reporteId!: number;
   @Input() reporte!: ReporteResponse;
+  @Output() registroAgregado = new EventEmitter<void>();
 
   private readonly service = inject(DistribucionTiempoService);
   private readonly fb      = inject(FormBuilder);

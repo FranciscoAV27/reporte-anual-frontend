@@ -21,6 +21,7 @@ export class InvestigacionComponent implements OnInit {
   @Input() oportunidadesInvestigacion = '';
   @Output() problemasChange     = new EventEmitter<string>();
   @Output() oportunidadesChange = new EventEmitter<string>();
+  @Output() registroAgregado = new EventEmitter<void>();
 
   private readonly service = inject(InvestigacionService);
   private readonly fb      = inject(FormBuilder);
@@ -165,6 +166,7 @@ export class InvestigacionComponent implements OnInit {
         this.mostrarFormProyecto = false;
         this.formNuevoProyecto.reset();
         this.cdr.detectChanges();
+        this.registroAgregado.emit();
       }
     });
   }
@@ -229,6 +231,7 @@ export class InvestigacionComponent implements OnInit {
         this.mostrarFormIndicador = false;
         this.formNuevoIndicador.reset();
         this.cdr.detectChanges();
+        this.registroAgregado.emit();
       }
     });
   }
@@ -267,7 +270,7 @@ export class InvestigacionComponent implements OnInit {
   agregarPublicacion(): void {
     if (this.formNuevaPublicacion.invalid) { this.formNuevaPublicacion.markAllAsTouched(); return; }
     this.service.crearPublicacion(this.reporteId, this.formNuevaPublicacion.value).subscribe({
-      next: (p) => { this.publicaciones = [...this.publicaciones, p]; this.mostrarFormPublicacion = false; this.formNuevaPublicacion.reset(); this.cdr.detectChanges(); }
+      next: (p) => { this.publicaciones = [...this.publicaciones, p]; this.mostrarFormPublicacion = false; this.formNuevaPublicacion.reset(); this.cdr.detectChanges(); this.registroAgregado.emit(); }
     });
   }
   activarEditPublicacion(p: PublicacionResponse): void {
@@ -305,7 +308,7 @@ export class InvestigacionComponent implements OnInit {
   agregarDesarrollo(): void {
     if (this.formNuevoDesarrollo.invalid) { this.formNuevoDesarrollo.markAllAsTouched(); return; }
     this.service.crearDesarrollo(this.reporteId, this.formNuevoDesarrollo.value).subscribe({
-      next: (d) => { this.desarrollo = [...this.desarrollo, d]; this.mostrarFormDesarrollo = false; this.formNuevoDesarrollo.reset(); this.cdr.detectChanges(); }
+      next: (d) => { this.desarrollo = [...this.desarrollo, d]; this.mostrarFormDesarrollo = false; this.formNuevoDesarrollo.reset(); this.cdr.detectChanges(); this.registroAgregado.emit(); }
     });
   }
   activarEditDesarrollo(d: ActividadDesarrolloResponse): void {

@@ -1,5 +1,5 @@
 // src/app/features/profesor/sections/formacion-rh/formacion-rh.component.ts
-import { Component, Input, OnInit, inject, ChangeDetectorRef } from '@angular/core';
+import { Component, Input, OnInit, inject, ChangeDetectorRef, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { FormacionRhService } from '../../../services/formacion-rh.service';
@@ -15,6 +15,7 @@ import { DireccionTesisResponse } from '../../../../../shared/models/reporte/s2/
 })
 export class FormacionRhComponent implements OnInit {
   @Input() reporteId!: number;
+  @Output() registroAgregado = new EventEmitter<void>();
 
   private readonly service = inject(FormacionRhService);
   private readonly fb      = inject(FormBuilder);
@@ -89,6 +90,7 @@ export class FormacionRhComponent implements OnInit {
         this.mostrarFormTutoria = false;
         this.formNuevaTutoria.reset();
         this.cdr.detectChanges();
+        this.registroAgregado.emit();
       }
     });
   }
@@ -138,6 +140,7 @@ export class FormacionRhComponent implements OnInit {
         this.mostrarFormTesis = false;
         this.formNuevaTesis.reset();
         this.cdr.detectChanges();
+        this.registroAgregado.emit();
       }
     });
   }

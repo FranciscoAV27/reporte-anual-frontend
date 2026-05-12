@@ -30,4 +30,10 @@ export class ReporteService {
   obtenerPorId(id: number): Observable<ReporteResponse> {
     return this.http.get<ReporteResponse>(`${this.base}/${id}`);
   }
+
+  toggleSeccion(id: number, numSeccion: number): Observable<ReporteResponse> {
+    return this.http.patch<ReporteResponse>(
+      `${this.base}/${id}/seccion/${numSeccion}/concluir`, {}
+    );
+  }
 }

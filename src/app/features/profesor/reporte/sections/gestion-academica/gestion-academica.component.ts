@@ -1,5 +1,5 @@
 // src/app/features/profesor/sections/gestion-academica/gestion-academica.component.ts
-import { Component, Input, OnInit, inject, ChangeDetectorRef } from '@angular/core';
+import { Component, Input, OnInit, inject, ChangeDetectorRef, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { GestionDifusionService } from '../../../services/gestion-difusion.service';
@@ -14,6 +14,7 @@ import { ActividadGestionResponse } from '../../../../../shared/models/reporte/s
 })
 export class GestionAcademicaComponent implements OnInit {
   @Input() reporteId!: number;
+  @Output() registroAgregado = new EventEmitter<void>();
 
   private readonly service = inject(GestionDifusionService);
   private readonly fb      = inject(FormBuilder);
@@ -77,6 +78,7 @@ export class GestionAcademicaComponent implements OnInit {
         this.mostrarForm = false;
         this.formNuevo.reset();
         this.cdr.detectChanges();
+        this.registroAgregado.emit();
       }
     });
   }

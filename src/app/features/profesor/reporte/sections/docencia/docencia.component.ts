@@ -22,6 +22,7 @@ export class DocenciaComponent implements OnInit {
   @Input() oportunidadesDocencia = '';
   @Output() problemasChange = new EventEmitter<string>();
   @Output() oportunidadesChange = new EventEmitter<string>();
+  @Output() registroAgregado = new EventEmitter<void>();
 
   private readonly docenciaService = inject(DocenciaService);
   private readonly fb = inject(FormBuilder);
@@ -110,31 +111,32 @@ export class DocenciaComponent implements OnInit {
 //     });
 //   }
 
-    abrirFormCurso(): void {
-        this.mostrarFormCurso = true;
-        this.formNuevoCurso.reset();
-        this.formNuevoCurso.patchValue({ numeroCurso: this.siguienteNumeroCurso });
-        this.cdr.detectChanges();
-    }
+  abrirFormCurso(): void {
+      this.mostrarFormCurso = true;
+      this.formNuevoCurso.reset();
+      this.formNuevoCurso.patchValue({ numeroCurso: this.siguienteNumeroCurso });
+      this.cdr.detectChanges();
+  }
 
-    agregarCurso(): void {
-        if (this.formNuevoCurso.invalid) { this.formNuevoCurso.markAllAsTouched(); return; }
+  agregarCurso(): void {
+      if (this.formNuevoCurso.invalid) { this.formNuevoCurso.markAllAsTouched(); return; }
 
-        const num = this.formNuevoCurso.value.numeroCurso;
-        if (this.numeroCursoYaExiste(num)) {
-            alert(`El número de curso ${num} ya existe. Elige otro.`);
-            return;
-        }
+      const num = this.formNuevoCurso.value.numeroCurso;
+      if (this.numeroCursoYaExiste(num)) {
+          alert(`El número de curso ${num} ya existe. Elige otro.`);
+          return;
+      }
 
-        this.docenciaService.crearCurso(this.reporteId, this.formNuevoCurso.value).subscribe({
-            next: (c) => {
-            this.cursos.push(c);
-            this.formNuevoCurso.reset();
-            this.mostrarFormCurso = false;
-            this.cdr.detectChanges();
-            }
-        });
-    }
+      this.docenciaService.crearCurso(this.reporteId, this.formNuevoCurso.value).subscribe({
+          next: (c) => {
+          this.cursos.push(c);
+          this.formNuevoCurso.reset();
+          this.mostrarFormCurso = false;
+          this.cdr.detectChanges();
+          this.registroAgregado.emit();
+          }
+      });
+  }
 
   activarEditCurso(c: CursoImpartidoResponse): void {
     this.editandoCursoId = c.id;
@@ -176,6 +178,7 @@ export class DocenciaComponent implements OnInit {
         this.formNuevoProducto.reset();
         this.mostrarFormProducto = false;
         this.cdr.detectChanges(); //nuevo
+        this.registroAgregado.emit();
       }
     });
   }
@@ -222,31 +225,32 @@ export class DocenciaComponent implements OnInit {
 //     });
 //   }
 
-    abrirFormAsignatura(): void {
-        this.mostrarFormAsignatura = true;
-        this.formNuevaAsignatura.reset();
-        this.formNuevaAsignatura.patchValue({ numAsignatura: this.siguienteNumeroAsignatura });
-        this.cdr.detectChanges();
-    }
+  abrirFormAsignatura(): void {
+      this.mostrarFormAsignatura = true;
+      this.formNuevaAsignatura.reset();
+      this.formNuevaAsignatura.patchValue({ numAsignatura: this.siguienteNumeroAsignatura });
+      this.cdr.detectChanges();
+  }
 
-    agregarAsignatura(): void {
-        if (this.formNuevaAsignatura.invalid) { this.formNuevaAsignatura.markAllAsTouched(); return; }
+  agregarAsignatura(): void {
+      if (this.formNuevaAsignatura.invalid) { this.formNuevaAsignatura.markAllAsTouched(); return; }
 
-        const num = this.formNuevaAsignatura.value.numAsignatura;
-        if (this.numAsignaturaYaExiste(num)) {
-            alert(`El número de asignatura ${num} ya existe. Elige otro.`);
-            return;
-        }
+      const num = this.formNuevaAsignatura.value.numAsignatura;
+      if (this.numAsignaturaYaExiste(num)) {
+          alert(`El número de asignatura ${num} ya existe. Elige otro.`);
+          return;
+      }
 
-        this.docenciaService.crearAsignatura(this.reporteId, this.formNuevaAsignatura.value).subscribe({
-            next: (a) => {
-            this.asignaturas.push(a);
-            this.formNuevaAsignatura.reset();
-            this.mostrarFormAsignatura = false;
-            this.cdr.detectChanges();
-            }
-        });
-    }
+      this.docenciaService.crearAsignatura(this.reporteId, this.formNuevaAsignatura.value).subscribe({
+          next: (a) => {
+          this.asignaturas.push(a);
+          this.formNuevaAsignatura.reset();
+          this.mostrarFormAsignatura = false;
+          this.cdr.detectChanges();
+          this.registroAgregado.emit();
+          }
+      });
+  }
 
   activarEditAsignatura(a: AsignaturaAfinidadResponse): void {
     this.editandoAsignaturaId = a.id;
@@ -302,30 +306,33 @@ export class DocenciaComponent implements OnInit {
     // ── Abrir formularios con autonumeración ───────────────────
 
 
-abrirFormProducto(): void {
-  this.mostrarFormProducto = true;
-  this.formNuevoProducto.reset();
-  this.cdr.detectChanges();
-}
+  abrirFormProducto(): void {
+    this.mostrarFormProducto = true;
+    this.formNuevoProducto.reset();
+    this.cdr.detectChanges();
+  }
 
 
 
-// ── Cancelar formularios ───────────────────────────────────
-cancelarFormCurso(): void {
-  this.mostrarFormCurso = false;
-  this.formNuevoCurso.reset();
-  this.cdr.detectChanges();
-}
+  // ── Cancelar formularios ───────────────────────────────────
+  cancelarFormCurso(): void {
+    this.mostrarFormCurso = false;
+    this.formNuevoCurso.reset();
+    this.cdr.detectChanges();
+  }
 
-cancelarFormProducto(): void {
-  this.mostrarFormProducto = false;
-  this.formNuevoProducto.reset();
-  this.cdr.detectChanges();
-}
+  cancelarFormProducto(): void {
+    this.mostrarFormProducto = false;
+    this.formNuevoProducto.reset();
+    this.cdr.detectChanges();
+  }
 
-cancelarFormAsignatura(): void {
-  this.mostrarFormAsignatura = false;
-  this.formNuevaAsignatura.reset();
-  this.cdr.detectChanges();
-}
+  cancelarFormAsignatura(): void {
+    this.mostrarFormAsignatura = false;
+    this.formNuevaAsignatura.reset();
+    this.cdr.detectChanges();
+  }
+
+  
+
 }

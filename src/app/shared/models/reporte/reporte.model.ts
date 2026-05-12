@@ -27,4 +27,13 @@ export interface ReporteResponse {
   actualizadoEn: string;
   enviadoEn?: string;
   aprobadoEn?: string;
+
+  // ── Secciones concluidas ──
+  seccion1Concluida: boolean;
+  seccion2Concluida: boolean;
+  seccion3Concluida: boolean;
+  seccion4Concluida: boolean;
+  seccion5Concluida: boolean;
+  seccion6Concluida: boolean;
+  seccion7Concluida: boolean;
 }
