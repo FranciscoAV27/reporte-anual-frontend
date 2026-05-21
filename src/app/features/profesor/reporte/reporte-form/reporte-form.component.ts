@@ -29,24 +29,25 @@ type Vista = 'home' | 'form' | 'historial';
   styleUrls: ['./reporte-form.component.css']
 })
 export class ReporteFormComponent implements OnInit {
-  private readonly ngZone = inject(NgZone); // ← nuevo
   private readonly reporteService = inject(ReporteService);
   private readonly authService    = inject(AuthService);
   private readonly fb             = inject(FormBuilder);
   private readonly cdr            = inject(ChangeDetectorRef);
+  private readonly ngZone         = inject(NgZone);
 
   reporte: ReporteResponse | null = null;
-  cargando   = true;
-  guardando  = false;
-  enviando   = false;
-  errorMsg   = '';
-  toastMsg   = '';
-  toastTipo  = '';
+  cargando  = true;
+  enviando  = false;
+  errorMsg  = '';
+  toastMsg  = '';
+  toastTipo = '';
   mostrarModalEnvio = false;
 
   vistaActiva: Vista = 'home';
-  readonly secciones = SECCIONES;
-  readonly anioActual = new Date().getFullYear();
+  seccionActiva = 0; // 0–6
+
+  readonly secciones   = SECCIONES;
+  readonly anioActual  = new Date().getFullYear();
 
   textosForm: FormGroup = this.fb.group({
     problemasDocencia:          [''],
@@ -56,6 +57,7 @@ export class ReporteFormComponent implements OnInit {
     comentariosGenerales:       [''],
   });
 
+  // ── Init ──────────────────────────────────────────────────
   ngOnInit(): void {
     this.reporteService.obtenerMisReportes().subscribe({
       next: (reportes) => {
@@ -65,14 +67,20 @@ export class ReporteFormComponent implements OnInit {
           this.poblarTextos(existente);
         } else {
           this.reporteService.crear({ anio: this.anioActual }).subscribe({
-            next: (nuevo) => { this.reporte = nuevo; this.cargando = false; this.cdr.detectChanges(); },
-            error: (err)  => { this.errorMsg = `No se pudo crear el reporte. (${err.status})`; this.cargando = false; this.cdr.detectChanges(); }
+            next: (nuevo) => {
+              this.ngZone.run(() => { this.reporte = nuevo; this.cargando = false; this.cdr.detectChanges(); });
+            },
+            error: (err) => {
+              this.ngZone.run(() => { this.errorMsg = `No se pudo crear el reporte. (${err.status})`; this.cargando = false; this.cdr.detectChanges(); });
+            }
           });
         }
         this.cargando = false;
         this.cdr.detectChanges();
       },
-      error: (err) => { this.errorMsg = `Error al cargar reportes. (${err.status})`; this.cargando = false; this.cdr.detectChanges(); }
+      error: (err) => {
+        this.ngZone.run(() => { this.errorMsg = `Error al cargar reportes. (${err.status})`; this.cargando = false; this.cdr.detectChanges(); });
+      }
     });
   }
 
@@ -86,38 +94,36 @@ export class ReporteFormComponent implements OnInit {
     });
   }
 
-  // ── Navegación ─────────────────────────────────────────────
-  setVista(v: Vista): void { this.vistaActiva = v; this.cdr.detectChanges(); }
-
-  irAForm(): void {
-    this.vistaActiva = 'form';
-    this.cdr.detectChanges();
-    setTimeout(() => window.scrollTo({ top: 0, behavior: 'smooth' }), 50);
+  mostrarNotificacion(event: {msg: string, tipo: string}): void {
+    this.mostrarToast(event.msg, event.tipo);
   }
 
-  // ── Progreso ───────────────────────────────────────────────
-  // get seccionesConcluidas(): number {
-  //   if (!this.reporte) return 0;
-  //   return [
-  //     this.reporte.seccion1Concluida,
-  //     this.reporte.seccion2Concluida,
-  //     this.reporte.seccion3Concluida,
-  //     this.reporte.seccion4Concluida,
-  //     this.reporte.seccion5Concluida,
-  //     this.reporte.seccion6Concluida,
-  //     this.reporte.seccion7Concluida,
-  //   ].filter(Boolean).length;
-  // }
+  // ── Navegación ─────────────────────────────────────────────
+  setVista(v: Vista): void {
+    this.vistaActiva = v;
+    if (v === 'form') this.seccionActiva = 0;
+    this.cdr.detectChanges();
+  }
 
+  irASeccion(i: number): void {
+    this.seccionActiva = i;
+    this.cdr.detectChanges();
+    setTimeout(() => {
+      const el = document.querySelector('.reporte-content');
+      if (el) el.scrollTop = 0;
+    }, 50);
+  }
+
+  anterior(): void { if (this.seccionActiva > 0) this.irASeccion(this.seccionActiva - 1); }
+  siguiente(): void { if (this.seccionActiva < 6) this.irASeccion(this.seccionActiva + 1); }
+
+  // ── Progreso ───────────────────────────────────────────────
   get seccionesConcluidas(): number {
     if (!this.reporte) return 0;
     return [
-      this.reporte.seccion1Concluida,
-      this.reporte.seccion2Concluida,
-      this.reporte.seccion3Concluida,
-      this.reporte.seccion4Concluida,
-      this.reporte.seccion5Concluida,
-      this.reporte.seccion6Concluida,
+      this.reporte.seccion1Concluida, this.reporte.seccion2Concluida,
+      this.reporte.seccion3Concluida, this.reporte.seccion4Concluida,
+      this.reporte.seccion5Concluida, this.reporte.seccion6Concluida,
       this.reporte.seccion7Concluida,
     ].filter(v => v === true).length;
   }
@@ -126,193 +132,63 @@ export class ReporteFormComponent implements OnInit {
     return Math.round((this.seccionesConcluidas / 7) * 100);
   }
 
-  get todasConcluidas(): boolean {
-    return this.seccionesConcluidas === 7;
-  }
-
-  // esConcluida(num: number): boolean {
-  //   if (!this.reporte) return false;
-  //   const key = `seccion${num}Concluida` as keyof ReporteResponse;
-  //   return !!this.reporte[key];
-  // }
-
-  // esConcluida(num: number): boolean {
-  //   if (!this.reporte) return false;
-  //   const key = `seccion${num}Concluida` as keyof ReporteResponse;
-  //   const val = !!this.reporte[key];
-  //   console.log(`esConcluida(${num}):`, val, '| reporte.seccion1Concluida:', this.reporte.seccion1Concluida);
-  //   return val;
-  // }
+  get todasConcluidas(): boolean { return this.seccionesConcluidas === 7; }
 
   esConcluida(num: number): boolean {
     if (!this.reporte) return false;
     const key = `seccion${num}Concluida` as keyof ReporteResponse;
-    return this.reporte[key] === true; // null y false ambos dan false
+    return this.reporte[key] === true;
   }
 
   // ── Toggle sección ─────────────────────────────────────────
-  /*toggleSeccion(num: number): void {
+  toggleSeccion(num: number, automatico = false): void {
     if (!this.reporte) return;
-    this.reporteService.toggleSeccion(this.reporte.id, num).subscribe({
-      next: (updated) => { this.reporte = updated; this.cdr.detectChanges(); },
-      error: () => this.mostrarToast('Error al actualizar la sección', 'error')
-    });
-  }*/
-
-  // toggleSeccion(num: number): void {
-  //   if (!this.reporte) return;
-  //   console.log('toggleSeccion llamado, num:', num);
-  //   this.reporteService.toggleSeccion(this.reporte.id, num).subscribe({
-  //     next: (updated) => {
-  //       console.log('Respuesta del backend:', updated);
-  //       this.reporte = updated;
-  //       this.cdr.detectChanges();
-  //     },
-  //     error: (err) => {
-  //       console.error('Error:', err);
-  //       this.mostrarToast('Error al actualizar la sección', 'error');
-  //       this.cdr.detectChanges();
-  //     }
-  //   });
-  // }
-
-  // toggleSeccion(num: number): void {
-  //   if (!this.reporte) return;
-  //   this.reporteService.toggleSeccion(this.reporte.id, num).subscribe({
-  //     next: (updated) => {
-  //       this.reporte = { ...updated }; // ← spread fuerza nueva referencia
-  //       this.cdr.detectChanges();
-  //     },
-  //     error: (err) => {
-  //       console.error('Error:', err);
-  //       this.mostrarToast('Error al actualizar la sección', 'error');
-  //       this.cdr.detectChanges();
-  //     }
-  //   });
-  // }
-
-  toggleSeccion(num: number): void {
-    if (!this.reporte) return;
+    const eraConcluida = this.esConcluida(num);
     this.reporteService.toggleSeccion(this.reporte.id, num).subscribe({
       next: (updated) => {
-        this.ngZone.run(() => {        // ← envuelve en NgZone
+        this.ngZone.run(() => {
           this.reporte = { ...updated };
           this.cdr.detectChanges();
+          if (eraConcluida) {
+            this.mostrarToast(
+              automatico ? 'Sección desmarcada automáticamente al agregar un registro' : 'Sección desmarcada',
+              'info'
+            );
+          } else {
+            this.mostrarToast('¡Sección marcada como concluida! ✓', 'success');
+          }
         });
       },
-      error: () => {
-        this.ngZone.run(() => {
-          this.mostrarToast('Error al actualizar la sección', 'error');
-          this.cdr.detectChanges();
-        });
-      }
+      error: () => this.mostrarToast('Error al actualizar la sección', 'error')
     });
   }
 
-  scrollASeccion(num: number): void {
-    if (this.vistaActiva !== 'form') {
-      this.vistaActiva = 'form';
-      this.cdr.detectChanges();
-      setTimeout(() => this.hacerScroll(num), 200);
-    } else {
-      this.hacerScroll(num);
+  onRegistroAgregado(numSeccion: number): void {
+    if (!this.reporte) return;
+    if (this.esConcluida(numSeccion)) {
+      this.toggleSeccion(numSeccion, true);
     }
   }
 
-  private hacerScroll(num: number): void {
-    const el = document.getElementById(`seccion-${num}`);
-    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
-  }
-
-  // ── Borrador ───────────────────────────────────────────────
-  // guardarBorrador(): void {
-  //   if (!this.reporte) return;
-  //   this.guardando = true;
-  //   const dto = { anio: this.anioActual, ...this.textosForm.value };
-  //   this.reporteService.guardarBorrador(this.reporte.id, dto).subscribe({
-  //     // next: (updated) => {
-  //     //   this.reporte  = updated;
-  //     //   this.guardando = false;
-  //     //   this.cdr.detectChanges();
-  //     //   this.mostrarToast('Borrador guardado correctamente', 'success');
-  //     // },
-  //     // En guardarBorrador:
-  //     next: (updated) => {
-  //       this.reporte  = { ...updated }; // ← spread
-  //       this.guardando = false;
-  //       this.cdr.detectChanges();
-  //       this.mostrarToast('Borrador guardado correctamente', 'success');
-  //     },
-  //     error: () => {
-  //       this.guardando = false;
-  //       this.cdr.detectChanges();
-  //       this.mostrarToast('Error al guardar el borrador', 'error');
-  //     }
-  //   });
-  // }
-
-  guardarBorrador(): void {
+  // ── Guardar textos (secciones 1, 3, 6) ────────────────────
+  guardarTextoSeccion(): void {
     if (!this.reporte) return;
-    this.guardando = true;
     const dto = { anio: this.anioActual, ...this.textosForm.value };
     this.reporteService.guardarBorrador(this.reporte.id, dto).subscribe({
       next: (updated) => {
         this.ngZone.run(() => {
-          this.reporte  = { ...updated };
-          this.guardando = false;
+          this.reporte = { ...updated };
           this.cdr.detectChanges();
-          this.mostrarToast('Borrador guardado correctamente', 'success');
+          this.mostrarToast('Guardado correctamente', 'success');
         });
       },
-      error: () => {
-        this.ngZone.run(() => {
-          this.guardando = false;
-          this.cdr.detectChanges();
-          this.mostrarToast('Error al guardar el borrador', 'error');
-        });
-      }
+      error: () => this.mostrarToast('Error al guardar', 'error')
     });
   }
 
   // ── Enviar a revisión ──────────────────────────────────────
-  // confirmarEnvio(): void { this.mostrarModalEnvio = true; this.cdr.detectChanges(); }
-  // cancelarEnvio(): void  { this.mostrarModalEnvio = false; this.cdr.detectChanges(); }
-
-  // enviarARevision(): void {
-  //   if (!this.reporte) return;
-  //   this.enviando = true;
-  //   this.mostrarModalEnvio = false;
-  //   this.reporteService.enviarARevision(this.reporte.id).subscribe({
-  //     // next: (updated) => {
-  //     //   this.reporte = updated;
-  //     //   this.enviando = false;
-  //     //   this.cdr.detectChanges();
-  //     //   this.mostrarToast('Reporte enviado a revisión exitosamente', 'success');
-  //     // },
-  //     // En enviarARevision:
-  //     next: (updated) => {
-  //       this.reporte = { ...updated }; // ← spread
-  //       this.enviando = false;
-  //       this.cdr.detectChanges();
-  //       this.mostrarToast('Reporte enviado a revisión exitosamente', 'success');
-  //     },
-  //     error: () => {
-  //       this.enviando = false;
-  //       this.cdr.detectChanges();
-  //       this.mostrarToast('Error al enviar el reporte', 'error');
-  //     }
-  //   });
-  // }
-
-  confirmarEnvio(): void { 
-    this.mostrarModalEnvio = true; 
-    this.cdr.detectChanges(); 
-  }
-
-  cancelarEnvio(): void { 
-    this.mostrarModalEnvio = false; 
-    this.cdr.detectChanges(); 
-  }
+  confirmarEnvio(): void  { this.mostrarModalEnvio = true;  this.cdr.detectChanges(); }
+  cancelarEnvio(): void   { this.mostrarModalEnvio = false; this.cdr.detectChanges(); }
 
   enviarARevision(): void {
     if (!this.reporte) return;
@@ -354,20 +230,16 @@ export class ReporteFormComponent implements OnInit {
 
   get estadoBadgeClass(): string {
     const map: Record<string, string> = {
-      BORRADOR:            'badge-borrador',
-      PENDIENTE_VALIDACION:'badge-pendiente',
-      ACEPTADO:            'badge-aceptado',
-      RECHAZADO:           'badge-rechazado',
+      BORRADOR: 'badge-borrador', PENDIENTE_VALIDACION: 'badge-pendiente',
+      ACEPTADO: 'badge-aceptado', RECHAZADO: 'badge-rechazado',
     };
     return map[this.reporte?.estado ?? ''] ?? 'badge-borrador';
   }
 
   get estadoLabel(): string {
     const map: Record<string, string> = {
-      BORRADOR:            'Borrador',
-      PENDIENTE_VALIDACION:'Pendiente de validación',
-      ACEPTADO:            'Aceptado',
-      RECHAZADO:           'Rechazado',
+      BORRADOR: 'Borrador', PENDIENTE_VALIDACION: 'Pendiente de validación',
+      ACEPTADO: 'Aceptado', RECHAZADO: 'Rechazado',
     };
     return map[this.reporte?.estado ?? ''] ?? 'Borrador';
   }
@@ -381,21 +253,5 @@ export class ReporteFormComponent implements OnInit {
 
   get formularioEditable(): boolean {
     return this.reporte?.estado === 'BORRADOR' || this.reporte?.estado === 'RECHAZADO';
-  }
-
-  // onRegistroAgregado(numSeccion: number): void {
-  //   if (!this.reporte) return;
-  //   if (this.esConcluida(numSeccion)) {
-  //     this.toggleSeccion(numSeccion);
-  //   }
-  // }
-
-  onRegistroAgregado(numSeccion: number): void {
-    console.log('onRegistroAgregado llamado, seccion:', numSeccion);
-    console.log('esConcluida:', this.esConcluida(numSeccion));
-    if (!this.reporte) return;
-    if (this.esConcluida(numSeccion)) {
-      this.toggleSeccion(numSeccion);
-    }
   }
 }

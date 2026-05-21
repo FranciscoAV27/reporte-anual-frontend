@@ -6,19 +6,13 @@
   <header class="topbar">
     <div class="topbar-brand">
       <div class="topbar-badge">UNPA</div>
-      <div class="topbar-title">
-        Reporte Anual
-        <small>Actividades Docentes</small>
-      </div>
+      <div class="topbar-title">Reporte Anual<small>Actividades Docentes</small></div>
     </div>
     <div class="topbar-divider"></div>
     <nav class="topbar-nav">
-      <button class="topbar-nav-btn" [class.active]="vistaActiva === 'home'"
-        (click)="setVista('home')">Inicio</button>
-      <button class="topbar-nav-btn" [class.active]="vistaActiva === 'form'"
-        (click)="setVista('form')">Mi Reporte {{ anioActual }}</button>
-      <button class="topbar-nav-btn" [class.active]="vistaActiva === 'historial'"
-        (click)="setVista('historial')">Historial</button>
+      <button class="topbar-nav-btn" [class.active]="vistaActiva === 'home'"     (click)="setVista('home')">Inicio</button>
+      <button class="topbar-nav-btn" [class.active]="vistaActiva === 'form'"     (click)="setVista('form')">Mi Reporte {{ anioActual }}</button>
+      <button class="topbar-nav-btn" [class.active]="vistaActiva === 'historial'"(click)="setVista('historial')">Historial</button>
     </nav>
     <div class="topbar-right">
       <div class="user-chip">
@@ -32,41 +26,30 @@
     </div>
   </header>
 
-  <main class="main-content">
-
-    <!-- ══ VISTA: HOME ══════════════════════════════════════ -->
-    <div *ngIf="vistaActiva === 'home'" class="subview">
-
+  <!-- ══ VISTA: HOME ══════════════════════════════════════════ -->
+  <main class="main-content" *ngIf="vistaActiva === 'home'">
+    <div class="subview">
       <div class="page-header">
         <h1>Panel principal</h1>
         <p>Bienvenido al sistema de Reporte Anual de Actividades Docentes</p>
       </div>
-
-      <!-- Banner periodo (estático por ahora) -->
       <div class="periodo-banner periodo-sin-datos">
         <div class="periodo-info">
           <strong>📅 Periodo de entrega</strong>
           <span>La secretaría aún no ha configurado el periodo de entrega activo</span>
         </div>
       </div>
-
-      <!-- Stat cards -->
       <div class="stats-row">
-
         <div class="stat-card accent">
           <div class="stat-label">Estado de tu reporte</div>
-          <div class="stat-value-badge">
-            <span class="badge" [ngClass]="estadoBadgeClass">{{ estadoLabel }}</span>
-          </div>
+          <div class="stat-value-badge"><span class="badge" [ngClass]="estadoBadgeClass">{{ estadoLabel }}</span></div>
           <div class="stat-meta">Última edición: {{ ultimaEdicion }}</div>
         </div>
-
         <div class="stat-card">
           <div class="stat-label">Año del reporte</div>
           <div class="stat-value">{{ anioActual }}</div>
           <div class="stat-meta">Oct {{ anioActual - 1 }} – Sep {{ anioActual }}</div>
         </div>
-
         <div class="stat-card" [class.accent]="progresoPorcentaje === 100">
           <div class="stat-label">Progreso del reporte</div>
           <div class="stat-value">{{ progresoPorcentaje }}%</div>
@@ -75,175 +58,195 @@
           </div>
           <div class="stat-meta">{{ seccionesConcluidas }} de 7 secciones concluidas</div>
         </div>
-
       </div>
-
-      <!-- Avisos (placeholder) -->
       <div class="section-card">
         <div class="section-card-header" style="cursor:default;pointer-events:none">
           <div class="section-number">!</div>
           <h3>Avisos</h3>
         </div>
         <div class="section-card-body">
-          <div class="alert alert-info">
-            📢 No hay avisos activos en este momento.
-          </div>
+          <div class="alert alert-info">📢 No hay avisos activos en este momento.</div>
         </div>
       </div>
-
     </div>
+  </main>
 
-    <!-- ══ VISTA: FORM ═══════════════════════════════════════ -->
-    <div *ngIf="vistaActiva === 'form'" class="subview">
+  <!-- ══ VISTA: MI REPORTE — nuevo layout ════════════════════ -->
+  <div class="reporte-shell" *ngIf="vistaActiva === 'form'">
 
-      <div class="page-header">
-        <h1>Reporte Anual de Actividades {{ anioActual }}</h1>
-        <p>Llena cada sección y márcala como concluida. Al finalizar todas, podrás enviar a revisión.</p>
+    <!-- ── Sidebar ── -->
+    <aside class="reporte-sidebar">
+
+      <div class="sb-head">
+        <div class="sb-label">Progreso</div>
+        <div class="sb-progress-track">
+          <div class="sb-progress-fill" [style.width.%]="progresoPorcentaje"></div>
+        </div>
+        <div class="sb-count"><strong>{{ seccionesConcluidas }}</strong> de 7 secciones completadas</div>
       </div>
 
-      <!-- Step Bar -->
-      <div class="step-bar">
-        <div *ngFor="let s of secciones"
-          class="step-item"
+      <nav class="sb-nav">
+        <button *ngFor="let s of secciones; let i = index"
+          class="sb-item"
+          [class.active]="seccionActiva === i"
           [class.done]="esConcluida(s.numero)"
-          (click)="scrollASeccion(s.numero)">
-          <div class="step-num">
+          (click)="irASeccion(i)">
+          <div class="sb-dot">
             <span *ngIf="!esConcluida(s.numero)">{{ s.numero }}</span>
             <span *ngIf="esConcluida(s.numero)">✓</span>
           </div>
-          <span class="step-label">{{ s.labelCorto }}</span>
-        </div>
-      </div>
-
-      <!-- TEMPORAL: diagnóstico -->
-      <!-- <p style="color:red;font-size:12px">
-        S1: {{ reporte?.seccion1Concluida }} | 
-        S2: {{ reporte?.seccion2Concluida }} | 
-        Progreso: {{ progresoPorcentaje }}%
-      </p> -->
-
-      <!-- ── Sección 1 ── -->
-      <div [id]="'seccion-1'">
-        <app-docencia
-          *ngIf="reporte"
-          [reporteId]="reporte.id"
-          [problemasDocencia]="textosForm.get('problemasDocencia')!.value"
-          [oportunidadesDocencia]="textosForm.get('oportunidadesDocencia')!.value"
-          (problemasChange)="textosForm.get('problemasDocencia')!.setValue($event)"
-          (oportunidadesChange)="textosForm.get('oportunidadesDocencia')!.setValue($event)"
-          (registroAgregado)="onRegistroAgregado(1)"> <!-- ← nuevo -->
-        </app-docencia>
-        <div class="seccion-footer" *ngIf="formularioEditable">
-          <button class="btn-concluir" [class.concluida]="esConcluida(1)" (click)="toggleSeccion(1)">
-            {{ esConcluida(1) ? '✓ Sección concluida — Editar' : 'Marcar sección como concluida' }}
-          </button>
-        </div>
-      </div>
-
-      <!-- ── Sección 2 ── -->
-      <div [id]="'seccion-2'">
-        <app-formacion-rh *ngIf="reporte" [reporteId]="reporte.id"
-        (registroAgregado)="onRegistroAgregado(2)"> <!-- ← nuevo -->
-        </app-formacion-rh>
-        <div class="seccion-footer" *ngIf="formularioEditable">
-          <button class="btn-concluir" [class.concluida]="esConcluida(2)" (click)="toggleSeccion(2)">
-            {{ esConcluida(2) ? '✓ Sección concluida — Editar' : 'Marcar sección como concluida' }}
-          </button>
-        </div>
-      </div>
-
-      <!-- ── Sección 3 ── -->
-      <div [id]="'seccion-3'">
-        <app-investigacion
-          *ngIf="reporte"
-          [reporteId]="reporte.id"
-          [problemasInvestigacion]="textosForm.get('problemasInvestigacion')!.value"
-          [oportunidadesInvestigacion]="textosForm.get('oportunidadesInvestigacion')!.value"
-          (problemasChange)="textosForm.get('problemasInvestigacion')!.setValue($event)"
-          (oportunidadesChange)="textosForm.get('oportunidadesInvestigacion')!.setValue($event)"
-          (registroAgregado)="onRegistroAgregado(3)"> <!-- ← nuevo -->
-        </app-investigacion>
-        <div class="seccion-footer" *ngIf="formularioEditable">
-          <button class="btn-concluir" [class.concluida]="esConcluida(3)" (click)="toggleSeccion(3)">
-            {{ esConcluida(3) ? '✓ Sección concluida — Editar' : 'Marcar sección como concluida' }}
-          </button>
-        </div>
-      </div>
-
-      <!-- ── Sección 4 ── -->
-      <div [id]="'seccion-4'">
-        <app-gestion-academica *ngIf="reporte" [reporteId]="reporte.id"
-        (registroAgregado)="onRegistroAgregado(4)"> <!-- ← nuevo -->
-        </app-gestion-academica>
-        <div class="seccion-footer" *ngIf="formularioEditable">
-          <button class="btn-concluir" [class.concluida]="esConcluida(4)" (click)="toggleSeccion(4)">
-            {{ esConcluida(4) ? '✓ Sección concluida — Editar' : 'Marcar sección como concluida' }}
-          </button>
-        </div>
-      </div>
-
-      <!-- ── Sección 5 ── -->
-      <div [id]="'seccion-5'">
-        <app-difusion *ngIf="reporte" [reporteId]="reporte.id"
-        (registroAgregado)="onRegistroAgregado(5)"> <!-- ← nuevo -->
-        </app-difusion>
-        <div class="seccion-footer" *ngIf="formularioEditable">
-          <button class="btn-concluir" [class.concluida]="esConcluida(5)" (click)="toggleSeccion(5)">
-            {{ esConcluida(5) ? '✓ Sección concluida — Editar' : 'Marcar sección como concluida' }}
-          </button>
-        </div>
-      </div>
-
-      <!-- ── Sección 6 ── -->
-      <div [id]="'seccion-6'">
-        <app-comentarios
-          *ngIf="reporte"
-          [comentarios]="textosForm.get('comentariosGenerales')!.value"
-          (comentariosChange)="textosForm.get('comentariosGenerales')!.setValue($event)">
-        </app-comentarios>
-        <div class="seccion-footer" *ngIf="formularioEditable">
-          <button class="btn-concluir" [class.concluida]="esConcluida(6)" (click)="toggleSeccion(6)">
-            {{ esConcluida(6) ? '✓ Sección concluida — Editar' : 'Marcar sección como concluida' }}
-          </button>
-        </div>
-      </div>
-
-      <!-- ── Sección 7 ── -->
-      <div [id]="'seccion-7'">
-        <app-distribucion-tiempo
-          *ngIf="reporte"
-          [reporteId]="reporte.id"
-          [reporte]="reporte">
-        </app-distribucion-tiempo>
-        <div class="seccion-footer" *ngIf="formularioEditable">
-          <button class="btn-concluir" [class.concluida]="esConcluida(7)" (click)="toggleSeccion(7)">
-            {{ esConcluida(7) ? '✓ Sección concluida — Editar' : 'Marcar sección como concluida' }}
-          </button>
-        </div>
-      </div>
-
-      <!-- ── Acciones globales ── -->
-      <div class="form-actions" *ngIf="formularioEditable">
-        <button class="btn btn-ghost" (click)="guardarBorrador()" [disabled]="guardando">
-          {{ guardando ? 'Guardando...' : '💾 Guardar borrador' }}
+          <span class="sb-item-label">{{ s.label }}</span>
+          <span class="sb-check" *ngIf="esConcluida(s.numero)">✓</span>
         </button>
-        <button class="btn btn-gold"
-          *ngIf="todasConcluidas"
-          (click)="confirmarEnvio()"
-          [disabled]="enviando">
-          📤 Enviar a revisión
-        </button>
+      </nav>
+
+      <div class="sb-foot">
+        <div class="sb-enviar-wrap">
+          <div class="sb-tooltip" *ngIf="!todasConcluidas">
+            Completa todas las secciones para habilitar este botón.
+          </div>
+          <button class="btn-enviar"
+            [disabled]="!todasConcluidas || enviando || !formularioEditable"
+            (click)="confirmarEnvio()">
+            {{ enviando ? 'Enviando...' : 'Enviar a revisión →' }}
+          </button>
+        </div>
+        <button class="btn-preview-pdf">👁 Previsualizar PDF</button>
       </div>
 
-      <!-- Reporte no editable -->
-      <div class="alert alert-info" *ngIf="!formularioEditable" style="margin-top:16px">
-        ℹ️ Este reporte está en estado <strong>{{ estadoLabel }}</strong> y no puede editarse.
-      </div>
+    </aside>
 
+    <!-- ── Contenido ── -->
+    <div class="reporte-content">
+      <div class="content-inner">
+
+        <!-- Cabecera de sección -->
+        <div class="sec-header">
+          <div class="sec-num-badge">
+            {{ seccionActiva + 1 }} de 7 · {{ secciones[seccionActiva].label }}
+          </div>
+          <h2 class="sec-title">{{ secciones[seccionActiva].label }}</h2>
+          <p class="sec-desc">{{ secciones[seccionActiva].descripcion }}</p>
+          <div class="sec-done-note" *ngIf="esConcluida(seccionActiva + 1)">
+            ✓ Esta sección está marcada como concluida. Puedes seguir editando.
+          </div>
+        </div>
+
+        <!-- Componente de sección activa -->
+        <ng-container [ngSwitch]="seccionActiva">
+
+          <!-- 0: Docencia -->
+          <ng-container *ngSwitchCase="0">
+            <app-docencia
+              *ngIf="reporte"
+              [reporteId]="reporte.id"
+              [problemasDocencia]="textosForm.get('problemasDocencia')!.value"
+              [oportunidadesDocencia]="textosForm.get('oportunidadesDocencia')!.value"
+              (problemasChange)="textosForm.get('problemasDocencia')!.setValue($event)"
+              (oportunidadesChange)="textosForm.get('oportunidadesDocencia')!.setValue($event)"
+              (registroAgregado)="onRegistroAgregado(1)"
+              (solicitarGuardarTextos)="guardarTextoSeccion()"
+              (notificacion)="mostrarNotificacion($event)">
+            </app-docencia>
+          </ng-container>
+
+          <!-- 1: Formación RH -->
+          <ng-container *ngSwitchCase="1">
+            <app-formacion-rh
+              *ngIf="reporte"
+              [reporteId]="reporte.id"
+              (registroAgregado)="onRegistroAgregado(2)"
+              (notificacion)="mostrarNotificacion($event)">
+            </app-formacion-rh>
+          </ng-container>
+
+          <!-- 2: Investigación -->
+          <ng-container *ngSwitchCase="2">
+            <app-investigacion
+              *ngIf="reporte"
+              [reporteId]="reporte.id"
+              [problemasInvestigacion]="textosForm.get('problemasInvestigacion')!.value"
+              [oportunidadesInvestigacion]="textosForm.get('oportunidadesInvestigacion')!.value"
+              (problemasChange)="textosForm.get('problemasInvestigacion')!.setValue($event)"
+              (oportunidadesChange)="textosForm.get('oportunidadesInvestigacion')!.setValue($event)"
+              (registroAgregado)="onRegistroAgregado(3)"
+              (solicitarGuardarTextos)="guardarTextoSeccion()"
+              (notificacion)="mostrarNotificacion($event)">
+            </app-investigacion>
+          </ng-container>
+
+          <!-- 3: Gestión -->
+          <ng-container *ngSwitchCase="3">
+            <app-gestion-academica
+              *ngIf="reporte"
+              [reporteId]="reporte.id"
+              (registroAgregado)="onRegistroAgregado(4)"
+              (notificacion)="mostrarNotificacion($event)">
+            </app-gestion-academica>
+          </ng-container>
+
+          <!-- 4: Difusión -->
+          <ng-container *ngSwitchCase="4">
+            <app-difusion
+              *ngIf="reporte"
+              [reporteId]="reporte.id"
+              (registroAgregado)="onRegistroAgregado(5)"
+              (notificacion)="mostrarNotificacion($event)">
+            </app-difusion>
+          </ng-container>
+
+          <!-- 5: Comentarios -->
+          <ng-container *ngSwitchCase="5">
+            <app-comentarios
+              *ngIf="reporte"
+              [comentarios]="textosForm.get('comentariosGenerales')!.value"
+              (comentariosChange)="textosForm.get('comentariosGenerales')!.setValue($event)"
+              (solicitarGuardar)="guardarTextoSeccion()">
+            </app-comentarios>
+          </ng-container>
+
+          <!-- 6: Distribución -->
+          <ng-container *ngSwitchCase="6">
+            <app-distribucion-tiempo
+              *ngIf="reporte"
+              [reporteId]="reporte.id"
+              [reporte]="reporte">
+            </app-distribucion-tiempo>
+          </ng-container>
+
+        </ng-container>
+
+        <!-- Footer de sección -->
+        <div class="sec-foot" *ngIf="formularioEditable">
+          <div class="sec-foot-nav">
+            <button class="btn-nav" (click)="anterior()" *ngIf="seccionActiva > 0">← Anterior</button>
+            <button class="btn-nav" (click)="siguiente()" *ngIf="seccionActiva < 6">Siguiente →</button>
+          </div>
+          <button class="btn-complete"
+            *ngIf="!esConcluida(seccionActiva + 1)"
+            (click)="toggleSeccion(seccionActiva + 1)">
+            ✓ Marcar como concluida
+          </button>
+          <button class="btn-edit-sec"
+            *ngIf="esConcluida(seccionActiva + 1)"
+            (click)="toggleSeccion(seccionActiva + 1)">
+            ✎ Editar sección
+          </button>
+        </div>
+
+        <!-- Reporte no editable -->
+        <div class="alert alert-info sec-readonly" *ngIf="!formularioEditable">
+          ℹ️ Este reporte está en estado <strong>{{ estadoLabel }}</strong> y no puede editarse.
+        </div>
+
+      </div>
     </div>
 
-    <!-- ══ VISTA: HISTORIAL ══════════════════════════════════ -->
-    <div *ngIf="vistaActiva === 'historial'" class="subview">
+  </div>
+
+  <!-- ══ VISTA: HISTORIAL ══════════════════════════════════════ -->
+  <main class="main-content" *ngIf="vistaActiva === 'historial'">
+    <div class="subview">
       <div class="page-header">
         <h1>Historial de reportes</h1>
         <p>Consulta tus reportes de años anteriores</p>
@@ -257,18 +260,17 @@
         </div>
       </div>
     </div>
-
   </main>
 
 </ng-container>
 
-<!-- Estado carga -->
+<!-- Cargando -->
 <div class="feedback-state" *ngIf="cargando">
   <div class="spinner"></div>
   <p>Cargando reporte...</p>
 </div>
 
-<!-- Estado error -->
+<!-- Error -->
 <div class="feedback-state error" *ngIf="errorMsg">
   <p>⚠️ {{ errorMsg }}</p>
 </div>
@@ -298,6 +300,7 @@
 <!-- Toast -->
 <div class="toast" [class.show]="toastMsg"
   [class.success]="toastTipo === 'success'"
-  [class.error]="toastTipo === 'error'">
+  [class.error]="toastTipo === 'error'"
+  [class.info]="toastTipo === 'info'">
   {{ toastMsg }}
 </div>

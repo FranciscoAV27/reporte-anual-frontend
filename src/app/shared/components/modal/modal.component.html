@@ -1,0 +1,23 @@
+<!-- modal.component.html -->
+<div class="modal-overlay" [class.show]="visible" (click)="onOverlayClick($event)">
+  <div class="modal" role="dialog">
+
+    <div class="modal-header">
+      <h3>{{ titulo }}</h3>
+      <button class="btn-modal-close" type="button" (click)="cerrar.emit()">✕</button>
+    </div>
+
+    <div class="modal-body">
+      <ng-content></ng-content>
+    </div>
+
+    <div class="modal-footer">
+      <button class="btn-cancel" type="button" (click)="cerrar.emit()">Cancelar</button>
+      <button class="btn-save-modal" type="button"
+        (click)="guardar.emit()" [disabled]="guardando">
+        {{ guardando ? 'Guardando...' : 'Guardar' }}
+      </button>
+    </div>
+
+  </div>
+</div>

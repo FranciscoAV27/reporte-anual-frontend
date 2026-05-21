@@ -1,23 +1,19 @@
-<!-- src/app/features/profesor/sections/comentarios/comentarios.component.html -->
-<div class="section-card" [class.collapsed]="colapsado">
-
-  <div class="section-card-header" (click)="toggleSeccion()">
-    <div class="section-number">6</div>
-    <h3>Comentarios Generales</h3>
-    <span class="chevron">▼</span>
+<!-- comentarios.component.html -->
+<div class="subsec">
+  <div class="subsec-title">Resumen general del período</div>
+  <div class="field-wrap">
+    <textarea
+      class="field-textarea"
+      style="min-height:140px"
+      placeholder="Escribe un resumen de tus actividades y cualquier comentario relevante para el coordinador..."
+      [value]="comentarios"
+      (input)="comentariosChange.emit($any($event.target).value)"
+      rows="7">
+    </textarea>
   </div>
-
-  <div class="section-card-body">
-    <div class="text-field-group">
-      <label class="field-label">Comentarios, observaciones o aclaraciones adicionales</label>
-      <textarea
-        class="field-textarea"
-        placeholder="Escriba aquí sus comentarios generales..."
-        [value]="comentarios"
-        (input)="comentariosChange.emit($any($event.target).value)"
-        rows="6">
-      </textarea>
-    </div>
+  <div class="textos-save-row">
+    <button class="btn-save-text" (click)="solicitarGuardar.emit()">
+      💾 Guardar comentarios generales
+    </button>
   </div>
-
 </div>

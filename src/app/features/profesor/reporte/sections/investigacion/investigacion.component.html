@@ -1,344 +1,268 @@
-<!-- src/app/features/profesor/reporte/sections/investigacion/investigacion.component.html -->
-<div class="section-card" [class.collapsed]="colapsado">
+<!-- investigacion.component.html -->
 
-  <div class="section-card-header" (click)="toggleSeccion()">
-    <div class="section-number">3</div>
-    <h3>Investigación y/o Promoción al Desarrollo</h3>
-    <span class="chevron">▼</span>
+<!-- ══ 3.1 Proyectos ═════════════════════════════════════════ -->
+<div class="subsec">
+  <div class="subsec-title">3.1 Proyectos de investigación</div>
+  <div class="table-wrap">
+    <table class="data-table">
+      <thead>
+        <tr><th>#</th><th>Título</th><th>Resp.</th><th>Fase</th><th>Instancia</th><th>F. Inicio</th><th>F. Term.</th><th>Avance %</th><th></th></tr>
+      </thead>
+      <tbody>
+        <tr class="empty-row" *ngIf="proyectos.length === 0"><td colspan="9">Sin proyectos registrados</td></tr>
+        <tr *ngFor="let p of proyectos">
+          <td class="mono">{{ p.numProyecto }}</td><td>{{ p.titulo }}</td>
+          <td class="mono">{{ p.responsabilidad }}</td><td class="mono">{{ p.faseAprobacion }}</td>
+          <td class="mono">{{ p.instancia }}</td>
+          <td class="mono">{{ p.fechaInicio ?? '—' }}</td>
+          <td class="mono">{{ p.fechaTerminacion ?? '—' }}</td>
+          <td class="mono">{{ p.avancePorcentaje }}%</td>
+          <td class="td-actions">
+            <button class="btn-icon edit" (click)="abrirEditarProyecto(p)">✏️</button>
+            <button class="btn-icon del"  (click)="eliminarProyecto(p.id)">✕</button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
   </div>
+  <button class="btn-add" (click)="abrirAgregarProyecto()">+ Agregar proyecto</button>
+</div>
 
-  <div class="section-card-body">
+<!-- ══ 3.1.1 Indicadores ════════════════════════════════════ -->
+<div class="subsec">
+  <div class="subsec-title">3.1.1 Indicadores cuantitativos de avance</div>
+  <div class="table-wrap">
+    <table class="data-table">
+      <thead>
+        <tr><th># Proyecto</th><th># Indicador</th><th>Descripción</th><th></th></tr>
+      </thead>
+      <tbody>
+        <tr class="empty-row" *ngIf="indicadores.length === 0"><td colspan="4">Sin indicadores registrados</td></tr>
+        <tr *ngFor="let i of indicadores">
+          <td class="mono">{{ i.numProyecto }}</td>
+          <td class="mono">{{ i.numIndicador }}</td>
+          <td>{{ i.descripcion }}</td>
+          <td class="td-actions">
+            <button class="btn-icon edit" (click)="abrirEditarIndicador(i)">✏️</button>
+            <button class="btn-icon del"  (click)="eliminarIndicador(i.proyectoId, i.id)">✕</button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <button class="btn-add" (click)="abrirAgregarIndicador()" [disabled]="proyectos.length === 0">+ Agregar indicador</button>
+</div>
 
-    <!-- ══ 3.1 Proyectos de investigación ════════════════════ -->
-    <h4 class="subsection-title">3.1 Proyectos de investigación</h4>
+<!-- ══ 3.2 Publicaciones ════════════════════════════════════ -->
+<div class="subsec">
+  <div class="subsec-title">3.2 Publicación de artículos</div>
+  <div class="table-wrap">
+    <table class="data-table">
+      <thead>
+        <tr><th>#</th><th>Título</th><th>Revista</th><th>Fase</th><th>Año</th><th></th></tr>
+      </thead>
+      <tbody>
+        <tr class="empty-row" *ngIf="publicaciones.length === 0"><td colspan="6">Sin publicaciones registradas</td></tr>
+        <tr *ngFor="let p of publicaciones">
+          <td class="mono">{{ p.numPublicacion }}</td><td>{{ p.titulo }}</td><td>{{ p.revista }}</td>
+          <td><span class="badge-fase" [ngClass]="'fase-' + p.fase">{{ p.fase === 'P' ? 'Publicado' : p.fase === 'A' ? 'Aceptado' : 'Revisión' }}</span></td>
+          <td class="mono">{{ p.anio }}</td>
+          <td class="td-actions">
+            <button class="btn-icon edit" (click)="abrirEditarPublicacion(p)">✏️</button>
+            <button class="btn-icon del"  (click)="eliminarPublicacion(p.id)">✕</button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <button class="btn-add" (click)="abrirAgregarPublicacion()">+ Agregar publicación</button>
+</div>
 
-    <div class="data-table-wrapper">
-      <table class="data-table">
-        <thead>
-          <tr>
-            <th>#</th><th>Título</th><th>Resp.</th><th>Fase aprobación</th>
-            <th>Instancia</th><th>F. Inicio</th><th>F. Term.</th><th>F. Reprog.</th><th>Avance %</th><th></th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr *ngIf="proyectos.length === 0 && !mostrarFormProyecto">
-            <td colspan="10" class="empty-row">Sin proyectos registrados</td>
-          </tr>
+<!-- ══ 3.3 Desarrollo ═══════════════════════════════════════ -->
+<div class="subsec">
+  <div class="subsec-title">3.3 Promoción al desarrollo</div>
+  <div class="table-wrap">
+    <table class="data-table">
+      <thead>
+        <tr><th>#</th><th>Actividad</th><th>Institución solicitante</th><th>Horas req.</th><th>Producto</th><th></th></tr>
+      </thead>
+      <tbody>
+        <tr class="empty-row" *ngIf="desarrollo.length === 0"><td colspan="6">Sin actividades de desarrollo registradas</td></tr>
+        <tr *ngFor="let d of desarrollo">
+          <td class="mono">{{ d.numActividad }}</td><td>{{ d.actividad }}</td>
+          <td>{{ d.institucionSolicitante }}</td><td class="mono">{{ d.horasRequeridas }}</td>
+          <td>{{ d.producto ?? '—' }}</td>
+          <td class="td-actions">
+            <button class="btn-icon edit" (click)="abrirEditarDesarrollo(d)">✏️</button>
+            <button class="btn-icon del"  (click)="eliminarDesarrollo(d.id)">✕</button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <button class="btn-add" (click)="abrirAgregarDesarrollo()">+ Agregar actividad</button>
+</div>
 
-          <ng-container *ngFor="let p of proyectos">
-            <tr *ngIf="editandoProyectoId !== p.id">
-              <td class="mono">{{ p.numProyecto }}</td>
-              <td>{{ p.titulo }}</td>
-              <td class="mono">{{ p.responsabilidad }}</td>
-              <td class="mono">{{ p.faseAprobacion }}</td>
-              <td class="mono">{{ p.instancia }}</td>
-              <td class="mono">{{ p.fechaInicio      ?? '—' }}</td>
-              <td class="mono">{{ p.fechaTerminacion ?? '—' }}</td>
-              <td class="mono">{{ p.fechaReprog      ?? '—' }}</td>
-              <td class="mono">{{ p.avancePorcentaje }}%</td>
-              <td>
-                <div class="row-actions">
-                  <button class="btn-row-edit" (click)="activarEditProyecto(p)">✏️</button>
-                  <button class="btn-row-del"  (click)="eliminarProyecto(p.id)">✕</button>
-                </div>
-              </td>
-            </tr>
-            <tr *ngIf="editandoProyectoId === p.id && formEditProyecto" [formGroup]="formEditProyecto" class="edit-row">
-              <td><input class="ti" type="number" min="1" formControlName="numProyecto"      style="width:50px"></td>
-              <td><input class="ti" type="text"         formControlName="titulo"></td>
-              <td>
-                <select class="ti" formControlName="responsabilidad">
-                  <option *ngFor="let o of responsabilidadOpciones" [value]="o.val">{{ o.val }}</option>
-                </select>
-              </td>
-              <td>
-                <select class="ti" formControlName="faseAprobacion">
-                  <option *ngFor="let o of faseAprobacionOpciones" [value]="o.val">{{ o.val }}</option>
-                </select>
-              </td>
-              <td>
-                <select class="ti" formControlName="instancia">
-                  <option *ngFor="let o of instanciaOpciones" [value]="o.val">{{ o.val }}</option>
-                </select>
-              </td>
-              <td><input class="ti" type="date" formControlName="fechaInicio"></td>
-              <td><input class="ti" type="date" formControlName="fechaTerminacion"></td>
-              <td><input class="ti" type="date" formControlName="fechaReprog"></td>
-              <td><input class="ti" type="number" min="0" max="100" formControlName="avancePorcentaje" style="width:60px"></td>
-              <td>
-                <div class="row-actions">
-                  <button class="btn-row-save"   (click)="guardarProyecto(p.id)">✓</button>
-                  <button class="btn-row-cancel" (click)="editandoProyectoId = null">✕</button>
-                </div>
-              </td>
-            </tr>
-          </ng-container>
-
-          <tr *ngIf="mostrarFormProyecto" [formGroup]="formNuevoProyecto" class="new-row">
-            <td><input class="ti" type="number" min="1" formControlName="numProyecto"      placeholder="#"  style="width:50px"></td>
-            <td><input class="ti" type="text"         formControlName="titulo"             placeholder="Título del proyecto"></td>
-            <td>
-              <select class="ti" formControlName="responsabilidad">
-                <option *ngFor="let o of responsabilidadOpciones" [value]="o.val">{{ o.label }}</option>
-              </select>
-            </td>
-            <td>
-              <select class="ti" formControlName="faseAprobacion">
-                <option *ngFor="let o of faseAprobacionOpciones" [value]="o.val">{{ o.label }}</option>
-              </select>
-            </td>
-            <td>
-              <select class="ti" formControlName="instancia">
-                <option *ngFor="let o of instanciaOpciones" [value]="o.val">{{ o.label }}</option>
-              </select>
-            </td>
-            <td><input class="ti" type="date" formControlName="fechaInicio"></td>
-            <td><input class="ti" type="date" formControlName="fechaTerminacion"></td>
-            <td><input class="ti" type="date" formControlName="fechaReprog"></td>
-            <td><input class="ti" type="number" min="0" max="100" formControlName="avancePorcentaje" placeholder="%" style="width:60px"></td>
-            <td>
-              <div class="row-actions">
-                <button class="btn-row-save"   (click)="agregarProyecto()">✓</button>
-                <button class="btn-row-cancel" (click)="cancelarFormProyecto()">✕</button>
-              </div>
-            </td>
-          </tr>
-        </tbody>
-      </table>
+<!-- ══ 3.4 Problemas y oportunidades ════════════════════════ -->
+<div class="subsec">
+  <div class="subsec-title">3.4 Problemas y oportunidades en investigación</div>
+  <div class="two-col">
+    <div class="field-wrap">
+      <label>Oportunidades</label>
+      <textarea class="field-textarea" placeholder="Aspectos que fomentan el desarrollo de la investigación..." [value]="oportunidadesInvestigacion" (input)="oportunidadesChange.emit($any($event.target).value)" rows="4"></textarea>
     </div>
-
-    <button class="btn-add-row" (click)="abrirFormProyecto()" *ngIf="!mostrarFormProyecto">
-      + Agregar proyecto
-    </button>
-
-    <hr class="section-divider">
-
-    <!-- ══ 3.1.1 Indicadores cuantitativos ═══════════════════ -->
-    <h4 class="subsection-title">3.1.1 Indicadores cuantitativos de avance</h4>
-
-    <div class="data-table-wrapper">
-      <table class="data-table">
-        <thead>
-          <tr><th># Proyecto</th><th># Indicador</th><th>Descripción</th><th></th></tr>
-        </thead>
-        <tbody>
-          <tr *ngIf="indicadores.length === 0 && !mostrarFormIndicador">
-            <td colspan="4" class="empty-row">Sin indicadores registrados</td>
-          </tr>
-
-          <ng-container *ngFor="let i of indicadores">
-            <tr *ngIf="editandoIndicadorId !== i.id">
-              <td class="mono">{{ i.numProyecto }}</td>
-              <td class="mono">{{ i.numIndicador }}</td>
-              <td>{{ i.descripcion }}</td>
-              <td>
-                <div class="row-actions">
-                  <button class="btn-row-edit" (click)="activarEditIndicador(i)">✏️</button>
-                  <button class="btn-row-del"  (click)="eliminarIndicador(i.proyectoId, i.id)">✕</button>
-                </div>
-              </td>
-            </tr>
-            <tr *ngIf="editandoIndicadorId === i.id && formEditIndicador" [formGroup]="formEditIndicador" class="edit-row">
-              <td>
-                <select class="ti" formControlName="numProyecto" style="width:80px">
-                  <option *ngFor="let p of proyectos" [value]="p.numProyecto">{{ p.numProyecto }}</option>
-                </select>
-              </td>
-              <td><input class="ti" type="number" min="1" formControlName="numIndicador" style="width:70px"></td>
-              <td><input class="ti" type="text"         formControlName="descripcion"></td>
-              <td>
-                <div class="row-actions">
-                  <button class="btn-row-save"   (click)="guardarIndicador(i)">✓</button>
-                  <button class="btn-row-cancel" (click)="editandoIndicadorId = null">✕</button>
-                </div>
-              </td>
-            </tr>
-          </ng-container>
-
-          <tr *ngIf="mostrarFormIndicador" [formGroup]="formNuevoIndicador" class="new-row">
-            <td>
-              <select class="ti" formControlName="numProyecto" style="width:80px">
-                <option *ngFor="let p of proyectos" [value]="p.numProyecto">{{ p.numProyecto }} — {{ p.titulo | slice:0:20 }}</option>
-              </select>
-            </td>
-            <td><input class="ti" type="number" min="1" formControlName="numIndicador" placeholder="#" style="width:70px"></td>
-            <td><input class="ti" type="text"         formControlName="descripcion"   placeholder="Descripción del indicador"></td>
-            <td>
-              <div class="row-actions">
-                <button class="btn-row-save"   (click)="agregarIndicador()">✓</button>
-                <button class="btn-row-cancel" (click)="cancelarFormIndicador()">✕</button>
-              </div>
-            </td>
-          </tr>
-        </tbody>
-      </table>
+    <div class="field-wrap">
+      <label>Problemas</label>
+      <textarea class="field-textarea" placeholder="Dificultades que obstaculizan el desarrollo de la investigación..." [value]="problemasInvestigacion" (input)="problemasChange.emit($any($event.target).value)" rows="4"></textarea>
     </div>
-
-    <button class="btn-add-row" (click)="abrirFormIndicador()" *ngIf="!mostrarFormIndicador" [disabled]="proyectos.length === 0" [title]="proyectos.length === 0 ? 'Primero agrega un proyecto' : ''">
-      + Agregar indicador
-    </button>
-
-    <hr class="section-divider">
-
-    <!-- ══ 3.2 Publicaciones ══════════════════════════════════ -->
-    <h4 class="subsection-title">3.2 Publicación de artículos</h4>
-
-    <div class="data-table-wrapper">
-      <table class="data-table">
-        <thead>
-          <tr><th>#</th><th>Título</th><th>Revista</th><th>Fase</th><th>Año</th><th></th></tr>
-        </thead>
-        <tbody>
-          <tr *ngIf="publicaciones.length === 0 && !mostrarFormPublicacion">
-            <td colspan="6" class="empty-row">Sin publicaciones registradas</td>
-          </tr>
-
-          <ng-container *ngFor="let p of publicaciones">
-            <tr *ngIf="editandoPublicacionId !== p.id">
-              <td class="mono">{{ p.numPublicacion }}</td>
-              <td>{{ p.titulo }}</td>
-              <td>{{ p.revista }}</td>
-              <td><span class="badge-fase" [class]="'fase-' + p.fase">{{ p.fase === 'P' ? 'Publicado' : p.fase === 'A' ? 'Aceptado' : 'Revisión' }}</span></td>
-              <td class="mono">{{ p.anio }}</td>
-              <td>
-                <div class="row-actions">
-                  <button class="btn-row-edit" (click)="activarEditPublicacion(p)">✏️</button>
-                  <button class="btn-row-del"  (click)="eliminarPublicacion(p.id)">✕</button>
-                </div>
-              </td>
-            </tr>
-            <tr *ngIf="editandoPublicacionId === p.id && formEditPublicacion" [formGroup]="formEditPublicacion" class="edit-row">
-              <td><input class="ti" type="number" min="1" formControlName="numPublicacion" style="width:50px"></td>
-              <td><input class="ti" type="text"         formControlName="titulo"></td>
-              <td><input class="ti" type="text"         formControlName="revista"></td>
-              <td>
-                <select class="ti" formControlName="fase">
-                  <option *ngFor="let o of fasePublicacionOpciones" [value]="o.val">{{ o.label }}</option>
-                </select>
-              </td>
-              <td><input class="ti" type="number" min="2000" max="2100" formControlName="anio" style="width:70px"></td>
-              <td>
-                <div class="row-actions">
-                  <button class="btn-row-save"   (click)="guardarPublicacion(p.id)">✓</button>
-                  <button class="btn-row-cancel" (click)="editandoPublicacionId = null">✕</button>
-                </div>
-              </td>
-            </tr>
-          </ng-container>
-
-          <tr *ngIf="mostrarFormPublicacion" [formGroup]="formNuevaPublicacion" class="new-row">
-            <td><input class="ti" type="number" min="1" formControlName="numPublicacion" placeholder="#"     style="width:50px"></td>
-            <td><input class="ti" type="text"         formControlName="titulo"           placeholder="Título del artículo"></td>
-            <td><input class="ti" type="text"         formControlName="revista"          placeholder="Nombre de la revista"></td>
-            <td>
-              <select class="ti" formControlName="fase">
-                <option *ngFor="let o of fasePublicacionOpciones" [value]="o.val">{{ o.label }}</option>
-              </select>
-            </td>
-            <td><input class="ti" type="number" min="2000" max="2100" formControlName="anio" style="width:70px"></td>
-            <td>
-              <div class="row-actions">
-                <button class="btn-row-save"   (click)="agregarPublicacion()">✓</button>
-                <button class="btn-row-cancel" (click)="cancelarFormPublicacion()">✕</button>
-              </div>
-            </td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-
-    <button class="btn-add-row" (click)="abrirFormPublicacion()" *ngIf="!mostrarFormPublicacion">
-      + Agregar publicación
-    </button>
-
-    <hr class="section-divider">
-
-    <!-- ══ 3.3 Promoción al desarrollo ═══════════════════════ -->
-    <h4 class="subsection-title">3.3 Promoción al desarrollo</h4>
-
-    <div class="data-table-wrapper">
-      <table class="data-table">
-        <thead>
-          <tr><th>#</th><th>Actividad</th><th>Institución solicitante</th><th>Horas req.</th><th>Producto</th><th></th></tr>
-        </thead>
-        <tbody>
-          <tr *ngIf="desarrollo.length === 0 && !mostrarFormDesarrollo">
-            <td colspan="6" class="empty-row">Sin actividades de desarrollo registradas</td>
-          </tr>
-
-          <ng-container *ngFor="let d of desarrollo">
-            <tr *ngIf="editandoDesarrolloId !== d.id">
-              <td class="mono">{{ d.numActividad }}</td>
-              <td>{{ d.actividad }}</td>
-              <td>{{ d.institucionSolicitante }}</td>
-              <td class="mono">{{ d.horasRequeridas }}</td>
-              <td>{{ d.producto ?? '—' }}</td>
-              <td>
-                <div class="row-actions">
-                  <button class="btn-row-edit" (click)="activarEditDesarrollo(d)">✏️</button>
-                  <button class="btn-row-del"  (click)="eliminarDesarrollo(d.id)">✕</button>
-                </div>
-              </td>
-            </tr>
-            <tr *ngIf="editandoDesarrolloId === d.id && formEditDesarrollo" [formGroup]="formEditDesarrollo" class="edit-row">
-              <td><input class="ti" type="number" min="1" formControlName="numActividad"           style="width:50px"></td>
-              <td><input class="ti" type="text"         formControlName="actividad"></td>
-              <td><input class="ti" type="text"         formControlName="institucionSolicitante"></td>
-              <td><input class="ti" type="number" min="0" formControlName="horasRequeridas"        style="width:70px"></td>
-              <td><input class="ti" type="text"         formControlName="producto"  placeholder="Opcional"></td>
-              <td>
-                <div class="row-actions">
-                  <button class="btn-row-save"   (click)="guardarDesarrollo(d.id)">✓</button>
-                  <button class="btn-row-cancel" (click)="editandoDesarrolloId = null">✕</button>
-                </div>
-              </td>
-            </tr>
-          </ng-container>
-
-          <tr *ngIf="mostrarFormDesarrollo" [formGroup]="formNuevoDesarrollo" class="new-row">
-            <td><input class="ti" type="number" min="1" formControlName="numActividad"            placeholder="#"  style="width:50px"></td>
-            <td><input class="ti" type="text"         formControlName="actividad"                 placeholder="Nombre de la actividad"></td>
-            <td><input class="ti" type="text"         formControlName="institucionSolicitante"    placeholder="Institución"></td>
-            <td><input class="ti" type="number" min="0" formControlName="horasRequeridas"         placeholder="Hrs" style="width:70px"></td>
-            <td><input class="ti" type="text"         formControlName="producto"                  placeholder="Opcional"></td>
-            <td>
-              <div class="row-actions">
-                <button class="btn-row-save"   (click)="agregarDesarrollo()">✓</button>
-                <button class="btn-row-cancel" (click)="cancelarFormDesarrollo()">✕</button>
-              </div>
-            </td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-
-    <button class="btn-add-row" (click)="abrirFormDesarrollo()" *ngIf="!mostrarFormDesarrollo">
-      + Agregar actividad de desarrollo
-    </button>
-
-    <hr class="section-divider">
-
-    <!-- ══ 3.4 Problemas y oportunidades ══════════════════════ -->
-    <h4 class="subsection-title">3.4 Problemas y oportunidades en investigación</h4>
-
-    <div class="text-fields-row">
-      <div class="text-field-group">
-        <label class="field-label">Oportunidades</label>
-        <textarea class="field-textarea" rows="4"
-          placeholder="Aspectos que fomentan el desarrollo de la investigación..."
-          [value]="oportunidadesInvestigacion"
-          (input)="oportunidadesChange.emit($any($event.target).value)">
-        </textarea>
-      </div>
-      <div class="text-field-group">
-        <label class="field-label">Problemas</label>
-        <textarea class="field-textarea" rows="4"
-          placeholder="Dificultades que obstaculizan el desarrollo de la investigación..."
-          [value]="problemasInvestigacion"
-          (input)="problemasChange.emit($any($event.target).value)">
-        </textarea>
-      </div>
-    </div>
-
+  </div>
+  <div class="textos-save-row">
+    <button class="btn-save-text" (click)="solicitarGuardarTextos.emit()">💾 Guardar oportunidades y problemas</button>
   </div>
 </div>
+
+<app-modal [visible]="modalVisible" [titulo]="modalTitulo" [guardando]="modalGuardando" (cerrar)="cerrarModal()" (guardar)="guardarModal()">
+
+  <!-- Proyecto -->
+  <ng-container *ngIf="tipoModal === 'proyecto'" [formGroup]="formProyecto">
+    <div class="field-wrap">
+      <label>Título del proyecto <span class="required">*</span></label>
+      <input type="text" formControlName="titulo" placeholder="Título del proyecto de investigación">
+      <span class="field-error" *ngIf="formProyecto.get('titulo')?.invalid && formProyecto.get('titulo')?.touched">
+        El título es obligatorio.
+      </span>
+    </div>
+    <div class="modal-row">
+      <div class="field-wrap">
+        <label>Responsabilidad <span class="required">*</span></label>
+        <select formControlName="responsabilidad">
+          <option *ngFor="let o of responsabilidadOpciones" [value]="o.val">{{ o.label }}</option>
+        </select>
+      </div>
+      <div class="field-wrap">
+        <label>Fase de aprobación <span class="required">*</span></label>
+        <select formControlName="faseAprobacion">
+          <option *ngFor="let o of faseAprobacionOpciones" [value]="o.val">{{ o.label }}</option>
+        </select>
+      </div>
+    </div>
+    <div class="field-wrap">
+      <label>Instancia <span class="required">*</span></label>
+      <select formControlName="instancia">
+        <option *ngFor="let o of instanciaOpciones" [value]="o.val">{{ o.label }}</option>
+      </select>
+    </div>
+    <div class="field-wrap">
+      <label>Fecha de inicio <span class="required">*</span></label>
+      <input type="date" formControlName="fechaInicio">
+      <span class="field-error" *ngIf="formProyecto.get('fechaInicio')?.invalid && formProyecto.get('fechaInicio')?.touched">
+        La fecha de inicio es obligatoria.
+      </span>
+    </div>
+    <div class="modal-row">
+      <div class="field-wrap">
+        <label>F. terminación <span style="color:#888;font-weight:400">(opcional)</span></label>
+        <input type="date" formControlName="fechaTerminacion">
+      </div>
+      <div class="field-wrap">
+        <label>F. reprogramada <span style="color:#888;font-weight:400">(opcional)</span></label>
+        <input type="date" formControlName="fechaReprog">
+      </div>
+    </div>
+    <div class="field-wrap">
+      <label>Avance % <span class="required">*</span></label>
+      <input type="number" min="0" max="100" formControlName="avancePorcentaje" placeholder="0 – 100">
+      <span class="field-error" *ngIf="formProyecto.get('avancePorcentaje')?.invalid && formProyecto.get('avancePorcentaje')?.touched">
+        Ingresa un porcentaje válido (0 – 100).
+      </span>
+    </div>
+  </ng-container>
+
+  <!-- Indicador -->
+  <ng-container *ngIf="tipoModal === 'indicador'" [formGroup]="formIndicador">
+    <div class="field-wrap">
+      <label>Proyecto al que pertenece <span class="required">*</span></label>
+      <select formControlName="numProyecto">
+        <option [value]="null">Selecciona un proyecto</option>
+        <option *ngFor="let p of proyectos" [value]="p.numProyecto">
+          {{ p.numProyecto }} — {{ p.titulo }}
+        </option>
+      </select>
+      <span class="field-error" *ngIf="formIndicador.get('numProyecto')?.invalid && formIndicador.get('numProyecto')?.touched">
+        Selecciona el proyecto al que pertenece el indicador.
+      </span>
+    </div>
+    <div class="field-wrap">
+      <label>Descripción del indicador <span class="required">*</span></label>
+      <textarea formControlName="descripcion" placeholder="Descripción del avance cuantitativo..." rows="3"></textarea>
+      <span class="field-error" *ngIf="formIndicador.get('descripcion')?.invalid && formIndicador.get('descripcion')?.touched">
+        La descripción es obligatoria.
+      </span>
+    </div>
+  </ng-container>
+
+  <!-- Publicación -->
+  <ng-container *ngIf="tipoModal === 'publicacion'" [formGroup]="formPublicacion">
+    <div class="field-wrap">
+      <label>Título del artículo <span class="required">*</span></label>
+      <input type="text" formControlName="titulo" placeholder="Título del artículo">
+      <span class="field-error" *ngIf="formPublicacion.get('titulo')?.invalid && formPublicacion.get('titulo')?.touched">
+        El título es obligatorio.
+      </span>
+    </div>
+    <div class="field-wrap">
+      <label>Revista / Congreso <span class="required">*</span></label>
+      <input type="text" formControlName="revista" placeholder="Nombre de la revista o congreso">
+      <span class="field-error" *ngIf="formPublicacion.get('revista')?.invalid && formPublicacion.get('revista')?.touched">
+        La revista o congreso es obligatorio.
+      </span>
+    </div>
+    <div class="modal-row">
+      <div class="field-wrap">
+        <label>Fase <span class="required">*</span></label>
+        <select formControlName="fase">
+          <option *ngFor="let o of fasePublicacionOpciones" [value]="o.val">{{ o.label }}</option>
+        </select>
+      </div>
+      <div class="field-wrap">
+        <label>Año <span class="required">*</span></label>
+        <input type="number" min="2000" max="2100" formControlName="anio" placeholder="2026">
+        <span class="field-error" *ngIf="formPublicacion.get('anio')?.invalid && formPublicacion.get('anio')?.touched">
+          Ingresa un año válido.
+        </span>
+      </div>
+    </div>
+  </ng-container>
+
+  <!-- Desarrollo -->
+  <ng-container *ngIf="tipoModal === 'desarrollo'" [formGroup]="formDesarrollo">
+    <div class="field-wrap">
+      <label>Nombre de la actividad <span class="required">*</span></label>
+      <input type="text" formControlName="actividad" placeholder="Nombre de la actividad">
+      <span class="field-error" *ngIf="formDesarrollo.get('actividad')?.invalid && formDesarrollo.get('actividad')?.touched">
+        El nombre de la actividad es obligatorio.
+      </span>
+    </div>
+    <div class="field-wrap">
+      <label>Institución solicitante <span class="required">*</span></label>
+      <input type="text" formControlName="institucionSolicitante" placeholder="Nombre de la institución">
+      <span class="field-error" *ngIf="formDesarrollo.get('institucionSolicitante')?.invalid && formDesarrollo.get('institucionSolicitante')?.touched">
+        La institución solicitante es obligatoria.
+      </span>
+    </div>
+    <div class="modal-row">
+      <div class="field-wrap">
+        <label>Horas requeridas <span class="required">*</span></label>
+        <input type="number" min="0" formControlName="horasRequeridas" placeholder="0">
+        <span class="field-error" *ngIf="formDesarrollo.get('horasRequeridas')?.invalid && formDesarrollo.get('horasRequeridas')?.touched">
+          Las horas requeridas son obligatorias.
+        </span>
+      </div>
+      <div class="field-wrap">
+        <label>Producto generado <span style="color:#888;font-weight:400">(opcional)</span></label>
+        <input type="text" formControlName="producto" placeholder="Opcional">
+      </div>
+    </div>
+  </ng-container>
+
+</app-modal>

@@ -1,107 +1,32 @@
-/* src/app/features/profesor/sections/distribucion-tiempo/distribucion-tiempo.component.css */
+/* distribucion-tiempo.component.css */
 @import url('../docencia/docencia.component.css');
 
-.dist-desc {
-  font-size: 13px;
-  color: var(--ink-soft);
-  margin-bottom: 16px;
-  line-height: 1.5;
-}
+.col-actividad { width: 52%; }
+.col-horas     { width: 16%; text-align: center; }
 
-.dist-table .col-actividad { width: 55%; }
-.dist-table .col-horas     { width: 15%; text-align: center; }
+.dist-row td   { vertical-align: middle; }
+.actividad-cell { font-size: 13px; color: #555; }
 
-.dist-row td { vertical-align: middle; }
-
-.actividad-cell {
-  font-size: 13px;
-  color: var(--ink);
-  padding-left: 14px;
-}
-
-.ti-horas {
-  width: 75px;
-  text-align: center;
-}
+.ti-horas { width: 72px; text-align: center; }
 
 .dist-total-row td {
-  background: var(--teal-light);
-  border-top: 2px solid var(--teal-mid);
-  font-weight: 700;
-  font-size: 14px;
+  background: #f0faf8;
+  border-top: 2px solid #c2e3dc;
+  font-weight: 700; font-size: 14px;
 }
+.dist-total-row .mono { text-align: center; color: #007D68; }
 
-.dist-total-row .mono {
-  text-align: center;
-  color: var(--teal-dark);
-}
-
-/* Fecha de entrega */
 .fecha-entrega {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  margin-top: 20px;
-  padding: 12px 16px;
-  background: var(--bg);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
+  display: flex; align-items: center; gap: 10px;
+  margin-top: 20px; padding: 12px 16px;
+  background: #f7f7f7; border: 1px solid #eee;
+  border-radius: 6px;
 }
+.fecha-valor   { font-size: 14px; color: #007D68; font-weight: 600; }
+.fecha-pendiente { font-size: 13px; color: #aaa; font-style: italic; }
 
-.fecha-valor {
-  font-family: var(--font-mono);
-  font-size: 14px;
-  color: var(--teal-dark);
-  font-weight: 600;
-}
+.dist-actions { display: flex; justify-content: flex-end; margin-top: 16px; }
 
-.fecha-pendiente {
-  font-size: 13px;
-  color: var(--ink-soft);
-  font-style: italic;
-}
-
-/* Acciones */
-.dist-actions {
-  display: flex;
-  justify-content: flex-end;
-  margin-top: 16px;
-}
-
-.btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 7px;
-  padding: 10px 20px;
-  border-radius: var(--radius-sm);
-  font-family: var(--font-body);
-  font-size: 14px;
-  font-weight: 600;
-  cursor: pointer;
-  border: none;
-  transition: all var(--transition);
-}
-.btn-teal {
-  background: linear-gradient(135deg, var(--teal), var(--teal-dark));
-  color: white;
-  box-shadow: 0 2px 8px rgba(61,140,124,.25);
-}
-.btn-teal:hover:not(:disabled) { transform: translateY(-1px); }
-.btn-teal:disabled { opacity: 0.6; cursor: not-allowed; }
-
-/* Spinner pequeño */
-.dist-loading {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 16px 0;
-  color: var(--ink-soft);
-  font-size: 13px;
-}
-.spinner-sm {
-  width: 20px; height: 20px;
-  border: 2px solid var(--teal-mid);
-  border-top-color: var(--teal);
-  border-radius: 50%;
-  animation: spin .7s linear infinite;
-}
+.dist-loading { display: flex; align-items: center; gap: 10px; padding: 16px 0; color: #aaa; font-size: 13px; }
+.spinner-sm { width: 20px; height: 20px; border: 2px solid #c2e3dc; border-top-color: #007D68; border-radius: 50%; animation: spin .7s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }

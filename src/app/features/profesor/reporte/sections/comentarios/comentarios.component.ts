@@ -1,4 +1,4 @@
-// src/app/features/profesor/sections/comentarios/comentarios.component.ts
+// comentarios.component.ts
 import { Component, Input, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
 
@@ -11,8 +11,7 @@ import { CommonModule } from '@angular/common';
 })
 export class ComentariosComponent {
   @Input()  comentarios = '';
-  @Output() comentariosChange = new EventEmitter<string>();
-
+  @Output() comentariosChange    = new EventEmitter<string>();
+  @Output() solicitarGuardar     = new EventEmitter<void>(); // ← nuevo
   colapsado = false;
-  toggleSeccion(): void { this.colapsado = !this.colapsado; }
 }

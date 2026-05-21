@@ -1,13 +1,7 @@
-/* src/app/features/profesor/reporte/sections/investigacion/investigacion.component.css */
+/* investigacion.component.css */
 @import url('../docencia/docencia.component.css');
 
-.badge-fase {
-  display: inline-block;
-  padding: 3px 8px;
-  border-radius: 4px;
-  font-size: 11px;
-  font-weight: 700;
-}
-.fase-P { background: var(--success-bg); color: var(--success); }
-.fase-A { background: var(--pending-bg); color: var(--pending); }
-.fase-R { background: var(--warn-bg);    color: var(--warn);    }
+.badge-fase { display: inline-flex; align-items: center; font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: 4px; }
+.fase-P { background: #EAFAEC; color: #18B32A; }
+.fase-A { background: #EBF0FA; color: #1F4F97; }
+.fase-R { background: #FDF6E3; color: #7a5a00; }

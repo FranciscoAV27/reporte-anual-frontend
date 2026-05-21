@@ -1,16 +1,4 @@
 /* You can add global styles to this file, and also import other style files */
-/* src/styles.css */
-/* 
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-}
-
-html, body {
-  height: 100%;
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-} */
 
 /* src/styles.css */
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -42,9 +30,9 @@ html, body {
   --shadow-sm:    0 1px 4px rgba(0,0,0,.07);
   --shadow:       0 4px 16px rgba(0,0,0,.10);
   --shadow-lg:    0 8px 32px rgba(0,0,0,.13);
-  --font-display: 'Playfair Display', Georgia, serif;
-  --font-body:    'DM Sans', sans-serif;
-  --font-mono:    'DM Mono', monospace;
+  --font-display: -apple-system, 'Segoe UI', sans-serif;
+  --font-body:    -apple-system, 'Segoe UI', sans-serif;
+  --font-mono:    'SF Mono', 'Cascadia Code', monospace;
   --transition:   .2s ease;
 }
 
@@ -54,4 +42,42 @@ html, body {
   color: var(--ink);
   font-size: 15px;
   min-height: 100vh;
+}
+
+/* ── Modal fields (compartido entre secciones) ── */
+.modal-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+@media (max-width: 500px) { .modal-row { grid-template-columns: 1fr; } }
+
+.field-wrap { display: flex; flex-direction: column; gap: 6px; }
+.field-wrap label { font-size: 11px; font-weight: 700; color: #888; letter-spacing: .5px; text-transform: uppercase; }
+.field-wrap input,
+.field-wrap select,
+.field-wrap textarea {
+  border: 1px solid #ddd; border-radius: 8px;
+  padding: 9px 12px; font-size: 13px;
+  color: #1a1a1a; background: white;
+  transition: border-color .15s; width: 100%;
+}
+.field-wrap input:focus,
+.field-wrap select:focus,
+.field-wrap textarea:focus {
+  outline: none; border-color: #007D68;
+  box-shadow: 0 0 0 3px rgba(0,125,104,.08);
+}
+.field-wrap textarea { resize: vertical; min-height: 80px; line-height: 1.5; }
+.required { color: #B31818; }
+
+/* ── Campos de modal: errores y hints ── */
+.field-error {
+  display: block; font-size: 11px;
+  color: #B31818; margin-top: 4px;
+}
+.field-hint {
+  display: block; font-size: 11px;
+  color: #888; margin-top: 4px; font-style: italic;
+}
+.field-readonly {
+  background: #f7f7f7 !important;
+  color: #666 !important;
+  cursor: not-allowed;
 }

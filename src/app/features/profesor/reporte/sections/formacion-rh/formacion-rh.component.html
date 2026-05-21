@@ -1,159 +1,163 @@
-<!-- src/app/features/profesor/sections/formacion-rh/formacion-rh.component.html -->
-<div class="section-card" [class.collapsed]="colapsado">
+<!-- formacion-rh.component.html -->
 
-  <div class="section-card-header" (click)="toggleSeccion()">
-    <div class="section-number">2</div>
-    <h3>Formación de Recursos Humanos</h3>
-    <span class="chevron">▼</span>
+<!-- ══ 2.1 Tutorías ══════════════════════════════════════════ -->
+<div class="subsec">
+  <div class="subsec-title">2.1 Tutorías</div>
+  <div class="table-wrap">
+    <table class="data-table">
+      <thead>
+        <tr><th>Nombre del estudiante</th><th>Carrera</th><th>Semestre</th><th>Fecha de registro</th><th></th></tr>
+      </thead>
+      <tbody>
+        <tr class="empty-row" *ngIf="tutorias.length === 0"><td colspan="5">Sin tutorías registradas</td></tr>
+        <tr *ngFor="let t of tutorias">
+          <td>{{ t.nombreAlumno }}</td>
+          <td>{{ t.carrera }}</td>
+          <td class="mono">{{ t.semestre }}</td>
+          <td class="mono">{{ t.fechaRegistro }}</td>
+          <td class="td-actions">
+            <button class="btn-icon edit" (click)="abrirEditarTutoria(t)">✏️</button>
+            <button class="btn-icon del"  (click)="eliminarTutoria(t.id)">✕</button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
   </div>
-
-  <div class="section-card-body">
-
-    <!-- ══ 2.1 Tutorías ══════════════════════════════════════ -->
-    <h4 class="subsection-title">2.1 Tutorías</h4>
-
-    <div class="data-table-wrapper">
-      <table class="data-table">
-        <thead>
-          <tr><th>Nombre del estudiante</th><th>Carrera</th><th>Semestre</th><th>Fecha de registro</th><th></th></tr>
-        </thead>
-        <tbody>
-
-          <tr *ngIf="tutorias.length === 0 && !mostrarFormTutoria">
-            <td colspan="5" class="empty-row">Sin tutorías registradas</td>
-          </tr>
-
-          <ng-container *ngFor="let t of tutorias">
-            <tr *ngIf="editandoTutoriaId !== t.id">
-              <td>{{ t.nombreAlumno }}</td>
-              <td>{{ t.carrera }}</td>
-              <td class="mono">{{ t.semestre }}</td>
-              <td class="mono">{{ t.fechaRegistro }}</td>
-              <td>
-                <div class="row-actions">
-                  <button class="btn-row-edit" (click)="activarEditTutoria(t)">✏️</button>
-                  <button class="btn-row-del"  (click)="eliminarTutoria(t.id)">✕</button>
-                </div>
-              </td>
-            </tr>
-            <tr *ngIf="editandoTutoriaId === t.id && formEditTutoria" [formGroup]="formEditTutoria" class="edit-row">
-              <td><input class="ti" type="text" formControlName="nombreAlumno"></td>
-              <td><input class="ti" type="text" formControlName="carrera"></td>
-              <td><input class="ti" type="number" min="1" max="12" formControlName="semestre" style="width:60px"></td>
-              <td><input class="ti" type="date" formControlName="fechaRegistro"></td>
-              <td>
-                <div class="row-actions">
-                  <button class="btn-row-save"   (click)="guardarTutoria(t.id)">✓</button>
-                  <button class="btn-row-cancel" (click)="editandoTutoriaId = null">✕</button>
-                </div>
-              </td>
-            </tr>
-          </ng-container>
-
-          <tr *ngIf="mostrarFormTutoria" [formGroup]="formNuevaTutoria" class="new-row">
-            <td><input class="ti" type="text"   formControlName="nombreAlumno"  placeholder="Nombre del estudiante"></td>
-            <td><input class="ti" type="text"   formControlName="carrera"       placeholder="Carrera"></td>
-            <td><input class="ti" type="number" min="1" max="12" formControlName="semestre" placeholder="Sem" style="width:60px"></td>
-            <td><input class="ti" type="date"   formControlName="fechaRegistro"></td>
-            <td>
-              <div class="row-actions">
-                <button class="btn-row-save"   (click)="agregarTutoria()">✓</button>
-                <button class="btn-row-cancel" (click)="cancelarFormTutoria()">✕</button>
-              </div>
-            </td>
-          </tr>
-
-        </tbody>
-      </table>
-    </div>
-
-    <button class="btn-add-row" (click)="abrirFormTutoria()" *ngIf="!mostrarFormTutoria">
-      + Agregar tutoría
-    </button>
-
-    <hr class="section-divider">
-
-    <!-- ══ 2.2 Dirección de tesis ═════════════════════════════ -->
-    <h4 class="subsection-title">2.2 Dirección de tesis</h4>
-
-    <div class="data-table-wrapper">
-      <table class="data-table">
-        <thead>
-          <tr>
-            <th>Título</th><th>Estudiante</th><th>Grado</th><th>Avance %</th>
-            <th>F. Registro</th><th>F. Prog. Term.</th><th>F. Reprog.</th><th></th>
-          </tr>
-        </thead>
-        <tbody>
-
-          <tr *ngIf="tesis.length === 0 && !mostrarFormTesis">
-            <td colspan="8" class="empty-row">Sin tesis registradas</td>
-          </tr>
-
-          <ng-container *ngFor="let t of tesis">
-            <tr *ngIf="editandoTesisId !== t.id">
-              <td>{{ t.titulo }}</td>
-              <td>{{ t.nombreAlumno }}</td>
-              <td class="mono">{{ t.grado === 'L' ? 'Lic.' : 'Mtra.' }}</td>
-              <td class="mono">{{ t.avancePorcentaje }}%</td>
-              <td class="mono">{{ t.fechaRegistro   ?? '—' }}</td>
-              <td class="mono">{{ t.fechaProgTerm   ?? '—' }}</td>
-              <td class="mono">{{ t.fechaReprogTerm ?? '—' }}</td>
-              <td>
-                <div class="row-actions">
-                  <button class="btn-row-edit" (click)="activarEditTesis(t)">✏️</button>
-                  <button class="btn-row-del"  (click)="eliminarTesis(t.id)">✕</button>
-                </div>
-              </td>
-            </tr>
-            <tr *ngIf="editandoTesisId === t.id && formEditTesis" [formGroup]="formEditTesis" class="edit-row">
-              <td><input class="ti" type="text"   formControlName="titulo"></td>
-              <td><input class="ti" type="text"   formControlName="nombreAlumno"></td>
-              <td>
-                <select class="ti" formControlName="grado">
-                  <option *ngFor="let g of gradoOpciones" [value]="g.val">{{ g.label }}</option>
-                </select>
-              </td>
-              <td><input class="ti" type="number" min="0" max="100" formControlName="avancePorcentaje" style="width:65px"></td>
-              <td><input class="ti" type="date"   formControlName="fechaRegistro"></td>
-              <td><input class="ti" type="date"   formControlName="fechaProgTerm"></td>
-              <td><input class="ti" type="date"   formControlName="fechaReprogTerm"></td>
-              <td>
-                <div class="row-actions">
-                  <button class="btn-row-save"   (click)="guardarTesis(t.id)">✓</button>
-                  <button class="btn-row-cancel" (click)="editandoTesisId = null">✕</button>
-                </div>
-              </td>
-            </tr>
-          </ng-container>
-
-          <tr *ngIf="mostrarFormTesis" [formGroup]="formNuevaTesis" class="new-row">
-            <td><input class="ti" type="text"   formControlName="titulo"           placeholder="Título de la tesis"></td>
-            <td><input class="ti" type="text"   formControlName="nombreAlumno"     placeholder="Nombre del estudiante"></td>
-            <td>
-              <select class="ti" formControlName="grado">
-                <option *ngFor="let g of gradoOpciones" [value]="g.val">{{ g.label }}</option>
-              </select>
-            </td>
-            <td><input class="ti" type="number" min="0" max="100" formControlName="avancePorcentaje" placeholder="%" style="width:65px"></td>
-            <td><input class="ti" type="date"   formControlName="fechaRegistro"></td>
-            <td><input class="ti" type="date"   formControlName="fechaProgTerm"></td>
-            <td><input class="ti" type="date"   formControlName="fechaReprogTerm"></td>
-            <td>
-              <div class="row-actions">
-                <button class="btn-row-save"   (click)="agregarTesis()">✓</button>
-                <button class="btn-row-cancel" (click)="cancelarFormTesis()">✕</button>
-              </div>
-            </td>
-          </tr>
-
-        </tbody>
-      </table>
-    </div>
-
-    <button class="btn-add-row" (click)="abrirFormTesis()" *ngIf="!mostrarFormTesis">
-      + Agregar tesis
-    </button>
-
-  </div>
+  <button class="btn-add" (click)="abrirAgregarTutoria()">+ Agregar tutoría</button>
 </div>
+
+<!-- ══ 2.2 Dirección de tesis ════════════════════════════════ -->
+<div class="subsec">
+  <div class="subsec-title">2.2 Dirección de tesis</div>
+  <div class="table-wrap">
+    <table class="data-table">
+      <thead>
+        <tr><th>Título</th><th>Estudiante</th><th>Grado</th><th>Avance %</th><th>F. Registro</th><th>F. Prog. Term.</th><th>F. Reprog.</th><th></th></tr>
+      </thead>
+      <tbody>
+        <tr class="empty-row" *ngIf="tesis.length === 0"><td colspan="8">Sin tesis registradas</td></tr>
+        <tr *ngFor="let t of tesis">
+          <td>{{ t.titulo }}</td>
+          <td>{{ t.nombreAlumno }}</td>
+          <td class="mono">{{ t.grado === 'L' ? 'Lic.' : 'Mtra.' }}</td>
+          <td class="mono">{{ t.avancePorcentaje }}%</td>
+          <td class="mono">{{ t.fechaRegistro   ?? '—' }}</td>
+          <td class="mono">{{ t.fechaProgTerm   ?? '—' }}</td>
+          <td class="mono">{{ t.fechaReprogTerm ?? '—' }}</td>
+          <td class="td-actions">
+            <button class="btn-icon edit" (click)="abrirEditarTesis(t)">✏️</button>
+            <button class="btn-icon del"  (click)="eliminarTesis(t.id)">✕</button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <button class="btn-add" (click)="abrirAgregarTesis()">+ Agregar tesis</button>
+</div>
+
+<!-- ══ MODAL ══════════════════════════════════════════════════ -->
+<app-modal
+  [visible]="modalVisible"
+  [titulo]="modalTitulo"
+  [guardando]="modalGuardando"
+  (cerrar)="cerrarModal()"
+  (guardar)="guardarModal()">
+
+  <!-- ── Tutoría ── -->
+  <ng-container *ngIf="tipoModal === 'tutoria'" [formGroup]="formTutoria">
+
+    <div class="field-wrap">
+      <label>Nombre del estudiante <span class="required">*</span></label>
+      <input type="text" formControlName="nombreAlumno" placeholder="Apellido Nombre">
+      <span class="field-error" *ngIf="formTutoria.get('nombreAlumno')?.invalid && formTutoria.get('nombreAlumno')?.touched">
+        El nombre del estudiante es obligatorio.
+      </span>
+    </div>
+
+    <div class="field-wrap">
+      <label>Carrera <span class="required">*</span></label>
+      <select formControlName="carrera">
+        <option value="">Selecciona una carrera</option>
+        <option *ngFor="let c of carrerasDisponibles" [value]="c.nombre">{{ c.nombre }}</option>
+      </select>
+      <span class="field-error" *ngIf="formTutoria.get('carrera')?.invalid && formTutoria.get('carrera')?.touched">
+        La carrera es obligatoria.
+      </span>
+    </div>
+
+    <div class="modal-row">
+      <div class="field-wrap">
+        <label>Semestre <span class="required">*</span></label>
+        <input type="number" min="1" max="12" formControlName="semestre" placeholder="1 – 12">
+        <span class="field-error" *ngIf="formTutoria.get('semestre')?.invalid && formTutoria.get('semestre')?.touched">
+          Ingresa un semestre válido (1 – 12).
+        </span>
+      </div>
+      <div class="field-wrap">
+        <label>Fecha de registro <span class="required">*</span></label>
+        <input type="date" formControlName="fechaRegistro">
+        <span class="field-error" *ngIf="formTutoria.get('fechaRegistro')?.invalid && formTutoria.get('fechaRegistro')?.touched">
+          La fecha de registro es obligatoria.
+        </span>
+      </div>
+    </div>
+
+  </ng-container>
+
+  <!-- ── Tesis ── -->
+  <ng-container *ngIf="tipoModal === 'tesis'" [formGroup]="formTesis">
+
+    <div class="field-wrap">
+      <label>Título de la tesis <span class="required">*</span></label>
+      <input type="text" formControlName="titulo" placeholder="Título de la tesis">
+      <span class="field-error" *ngIf="formTesis.get('titulo')?.invalid && formTesis.get('titulo')?.touched">
+        El título es obligatorio.
+      </span>
+    </div>
+
+    <div class="field-wrap">
+      <label>Nombre del estudiante <span class="required">*</span></label>
+      <input type="text" formControlName="nombreAlumno" placeholder="Apellido Nombre">
+      <span class="field-error" *ngIf="formTesis.get('nombreAlumno')?.invalid && formTesis.get('nombreAlumno')?.touched">
+        El nombre del estudiante es obligatorio.
+      </span>
+    </div>
+
+    <div class="modal-row">
+      <div class="field-wrap">
+        <label>Grado <span class="required">*</span></label>
+        <select formControlName="grado">
+          <option *ngFor="let g of gradoOpciones" [value]="g.val">{{ g.label }}</option>
+        </select>
+      </div>
+      <div class="field-wrap">
+        <label>Avance % <span class="required">*</span></label>
+        <input type="number" min="0" max="100" formControlName="avancePorcentaje" placeholder="0 – 100">
+        <span class="field-error" *ngIf="formTesis.get('avancePorcentaje')?.invalid && formTesis.get('avancePorcentaje')?.touched">
+          Ingresa un porcentaje válido (0 – 100).
+        </span>
+      </div>
+    </div>
+
+    <div class="field-wrap">
+      <label>Fecha de registro <span class="required">*</span></label>
+      <input type="date" formControlName="fechaRegistro">
+      <span class="field-error" *ngIf="formTesis.get('fechaRegistro')?.invalid && formTesis.get('fechaRegistro')?.touched">
+        La fecha de registro es obligatoria.
+      </span>
+    </div>
+
+    <div class="modal-row">
+      <div class="field-wrap">
+        <label>F. prog. terminación <span style="color:#888;font-weight:400">(opcional)</span></label>
+        <input type="date" formControlName="fechaProgTerm">
+      </div>
+      <div class="field-wrap">
+        <label>F. reprog. terminación <span style="color:#888;font-weight:400">(opcional)</span></label>
+        <input type="date" formControlName="fechaReprogTerm">
+      </div>
+    </div>
+
+  </ng-container>
+
+</app-modal>
