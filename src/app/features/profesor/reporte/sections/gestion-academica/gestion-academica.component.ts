@@ -5,6 +5,8 @@ import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angula
 import { GestionDifusionService } from '../../../services/gestion-difusion.service';
 import { ActividadGestionResponse } from '../../../../../shared/models/reporte/s4/actividad-gestion.model';
 import { ModalComponent } from '../../../../../shared/components/modal/modal.component';
+import { forkJoin, of } from 'rxjs';
+import { switchMap } from 'rxjs/operators';
 
 @Component({
   selector: 'app-gestion-academica',
@@ -165,10 +167,40 @@ export class GestionAcademicaComponent implements OnInit {
     });
   }
 
+  // eliminar(id: number): void {
+  //   this.service.eliminarGestion(this.reporteId, id).subscribe({
+  //     next: () => { this.actividades = this.actividades.filter(a => a.id !== id); this.cdr.detectChanges(); this.notificacion.emit({ msg: 'Actividad eliminada', tipo: 'info' }); },
+  //     error: () => this.notificacion.emit({ msg: 'Error al eliminar', tipo: 'error' })
+  //   });
+  // }
+
   eliminar(id: number): void {
-    this.service.eliminarGestion(this.reporteId, id).subscribe({
-      next: () => { this.actividades = this.actividades.filter(a => a.id !== id); this.cdr.detectChanges(); this.notificacion.emit({ msg: 'Actividad eliminada', tipo: 'info' }); },
-      error: () => this.notificacion.emit({ msg: 'Error al eliminar', tipo: 'error' })
+    const item = this.actividades.find(a => a.id === id)!;
+    const numEliminado = item.numActividad;
+    const afectadas = this.actividades.filter(a => a.numActividad > numEliminado);
+
+    this.service.eliminarGestion(this.reporteId, id).pipe(
+      switchMap(() => {
+        if (afectadas.length === 0) return of(null);
+        return forkJoin(
+          afectadas.map(a =>
+            this.service.actualizarGestion(this.reporteId, a.id, {
+              numActividad:    a.numActividad - 1,
+              nombre:          a.nombre,
+              comisionOPuesto: a.comisionOPuesto,
+              periodoInicio:   a.periodoInicio,
+              periodoFin:      a.periodoFin
+            })
+          )
+        );
+      })
+    ).subscribe({
+      next: () => {
+        this.cargar();
+        this.cdr.detectChanges();
+        this.notificacion.emit({ msg: 'Actividad eliminada', tipo: 'info' });
+      },
+      error: () => this.notificacion.emit({ msg: 'Error al eliminar la actividad', tipo: 'error' })
     });
   }
 

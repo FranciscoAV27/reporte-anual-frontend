@@ -247,6 +247,8 @@ import { ProductoApoyoDocenteResponse } from '../../../../../shared/models/repor
 import { AsignaturaAfinidadResponse } from '../../../../../shared/models/reporte/s1/asignatura-afinidad.model';
 import { CarreraResponse, AsignaturaResponse } from '../../../../../shared/models/catalogo.model';
 import { ModalComponent } from '../../../../../shared/components/modal/modal.component';
+import { forkJoin, of } from 'rxjs';
+import { switchMap } from 'rxjs/operators';
 
 @Component({
   selector: 'app-docencia',
@@ -264,6 +266,8 @@ export class DocenciaComponent implements OnInit {
   @Output() registroAgregado       = new EventEmitter<void>();
   @Output() solicitarGuardarTextos = new EventEmitter<void>();
   @Output() notificacion           = new EventEmitter<{msg: string, tipo: string}>();
+
+  @Input() anioReporte!: number; // ← nuevo
 
   private readonly docenciaService = inject(DocenciaService);
   private readonly catalogoService = inject(CatalogoService);
@@ -377,9 +381,16 @@ export class DocenciaComponent implements OnInit {
     this.cdr.detectChanges();
   }
 
+  // private calcularCiclo(semestre: number): string {
+  //   const a = this.anioActual;
+  //   return semestre % 2 !== 0 ? `${a}-${a + 1}` : `${a + 1}-${a + 1}`;
+  // }
+
   private calcularCiclo(semestre: number): string {
-    const a = this.anioActual;
-    return semestre % 2 !== 0 ? `${a}-${a + 1}` : `${a + 1}-${a + 1}`;
+    const inicio = this.anioReporte - 1;
+    return semestre % 2 !== 0
+      ? `${inicio}-${this.anioReporte}`    // impar: oct–feb
+      : `${this.anioReporte}-${this.anioReporte}`; // par: mar–jul
   }
 
   // ── Autonumeración ─────────────────────────────────────────
@@ -466,10 +477,71 @@ export class DocenciaComponent implements OnInit {
     });
   }
 
+  // eliminarCurso(id: number): void {
+  //   this.docenciaService.eliminarCurso(this.reporteId, id).subscribe({
+  //     next: () => { this.cursos = this.cursos.filter(c => c.id !== id); this.cdr.detectChanges(); this.notificacion.emit({ msg: 'Curso eliminado', tipo: 'info' }); },
+  //     error: () => this.notificacion.emit({ msg: 'Error al eliminar', tipo: 'error' })
+  //   });
+  // }
+
   eliminarCurso(id: number): void {
-    this.docenciaService.eliminarCurso(this.reporteId, id).subscribe({
-      next: () => { this.cursos = this.cursos.filter(c => c.id !== id); this.cdr.detectChanges(); this.notificacion.emit({ msg: 'Curso eliminado', tipo: 'info' }); },
-      error: () => this.notificacion.emit({ msg: 'Error al eliminar', tipo: 'error' })
+    const curso = this.cursos.find(c => c.id === id)!;
+    const numEliminado = curso.numeroCurso;
+
+    // Pre-calculamos los afectados antes de cualquier operación
+    const productosHuerfanos  = this.productos.filter(p => p.numeroCurso === numEliminado);
+    const cursosAfectados     = this.cursos.filter(c => c.numeroCurso > numEliminado);
+    const productosAfectados  = this.productos.filter(p => p.numeroCurso > numEliminado);
+
+    this.docenciaService.eliminarCurso(this.reporteId, id).pipe(
+
+      // Paso 2: eliminar productos huérfanos
+      switchMap(() => {
+        if (productosHuerfanos.length === 0) return of(null);
+        return forkJoin(
+          productosHuerfanos.map(p => this.docenciaService.eliminarProducto(this.reporteId, p.id))
+        );
+      }),
+
+      // Paso 3: reordenar cursos
+      switchMap(() => {
+        if (cursosAfectados.length === 0) return of(null);
+        return forkJoin(
+          cursosAfectados.map(c =>
+            this.docenciaService.actualizarCurso(this.reporteId, c.id, {
+              numeroCurso:  c.numeroCurso - 1,
+              carrera:      c.carrera,
+              asignatura:   c.asignatura,
+              semestre:     c.semestre,
+              cicloEscolar: c.cicloEscolar,
+              horasSemana:  c.horasSemana,
+              numAlumnos:   c.numAlumnos
+            })
+          )
+        );
+      }),
+
+      // Paso 4: reordenar referencias de productos
+      switchMap(() => {
+        if (productosAfectados.length === 0) return of(null);
+        return forkJoin(
+          productosAfectados.map(p =>
+            this.docenciaService.actualizarProducto(this.reporteId, p.id, {
+              numeroCurso: p.numeroCurso - 1,
+              descripcion: p.descripcion,
+              enlace:      p.enlace ?? ''
+            })
+          )
+        );
+      })
+
+    ).subscribe({
+      next: () => {
+        this.cargarTodo();
+        this.cdr.detectChanges();
+        this.notificacion.emit({ msg: 'Curso eliminado correctamente', tipo: 'info' });
+      },
+      error: () => this.notificacion.emit({ msg: 'Error al eliminar el curso', tipo: 'error' })
     });
   }
 
@@ -503,9 +575,21 @@ export class DocenciaComponent implements OnInit {
     });
   }
 
+  // eliminarProducto(id: number): void {
+  //   this.docenciaService.eliminarProducto(this.reporteId, id).subscribe({
+  //     next: () => { this.productos = this.productos.filter(p => p.id !== id); this.cdr.detectChanges(); this.notificacion.emit({ msg: 'Producto eliminado', tipo: 'info' }); },
+  //     error: () => this.notificacion.emit({ msg: 'Error al eliminar', tipo: 'error' })
+  //   });
+  // }
+
   eliminarProducto(id: number): void {
+    // Productos no tienen campo numérico propio, solo se eliminan
     this.docenciaService.eliminarProducto(this.reporteId, id).subscribe({
-      next: () => { this.productos = this.productos.filter(p => p.id !== id); this.cdr.detectChanges(); this.notificacion.emit({ msg: 'Producto eliminado', tipo: 'info' }); },
+      next: () => {
+        this.productos = this.productos.filter(p => p.id !== id);
+        this.cdr.detectChanges();
+        this.notificacion.emit({ msg: 'Producto eliminado', tipo: 'info' });
+      },
       error: () => this.notificacion.emit({ msg: 'Error al eliminar', tipo: 'error' })
     });
   }
@@ -558,9 +642,38 @@ export class DocenciaComponent implements OnInit {
     });
   }
 
+  // eliminarAsignatura(id: number): void {
+  //   this.docenciaService.eliminarAsignatura(this.reporteId, id).subscribe({
+  //     next: () => { this.asignaturas = this.asignaturas.filter(a => a.id !== id); this.cdr.detectChanges(); this.notificacion.emit({ msg: 'Asignatura eliminada', tipo: 'info' }); },
+  //     error: () => this.notificacion.emit({ msg: 'Error al eliminar', tipo: 'error' })
+  //   });
+  // }
+
   eliminarAsignatura(id: number): void {
-    this.docenciaService.eliminarAsignatura(this.reporteId, id).subscribe({
-      next: () => { this.asignaturas = this.asignaturas.filter(a => a.id !== id); this.cdr.detectChanges(); this.notificacion.emit({ msg: 'Asignatura eliminada', tipo: 'info' }); },
+    const asignatura = this.asignaturas.find(a => a.id === id)!;
+    const numEliminado = asignatura.numAsignatura;
+    const afectadas = this.asignaturas.filter(a => a.numAsignatura > numEliminado);
+
+    this.docenciaService.eliminarAsignatura(this.reporteId, id).pipe(
+      switchMap(() => {
+        if (afectadas.length === 0) return of(null);
+        return forkJoin(
+          afectadas.map(a =>
+            this.docenciaService.actualizarAsignatura(this.reporteId, a.id, {
+              numAsignatura: a.numAsignatura - 1,
+              carrera:       a.carrera,
+              asignatura:    a.asignatura,
+              semestre:      a.semestre
+            })
+          )
+        );
+      })
+    ).subscribe({
+      next: () => {
+        this.cargarTodo();
+        this.cdr.detectChanges();
+        this.notificacion.emit({ msg: 'Asignatura eliminada', tipo: 'info' });
+      },
       error: () => this.notificacion.emit({ msg: 'Error al eliminar', tipo: 'error' })
     });
   }

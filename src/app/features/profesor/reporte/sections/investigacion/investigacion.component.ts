@@ -8,6 +8,8 @@ import { IndicadorProyectoResponse } from '../../../../../shared/models/reporte/
 import { PublicacionResponse } from '../../../../../shared/models/reporte/s3/publicacion.model';
 import { ActividadDesarrolloResponse } from '../../../../../shared/models/reporte/s3/actividad-desarrollo.model';
 import { ModalComponent } from '../../../../../shared/components/modal/modal.component';
+import { forkJoin, of } from 'rxjs';
+import { switchMap } from 'rxjs/operators';
 
 @Component({
   selector: 'app-investigacion',
@@ -35,25 +37,6 @@ export class InvestigacionComponent implements OnInit {
   publicaciones: PublicacionResponse[]          = [];
   desarrollo:   ActividadDesarrolloResponse[]   = [];
 
-  // mostrarFormProyecto    = false;
-  // mostrarFormIndicador   = false;
-  // mostrarFormPublicacion = false;
-  // mostrarFormDesarrollo  = false;
-
-  // editandoProyectoId:    number | null = null;
-  // editandoIndicadorId:   number | null = null;
-  // editandoPublicacionId: number | null = null;
-  // editandoDesarrolloId:  number | null = null;
-
-  // formNuevoProyecto!:    FormGroup;
-  // formNuevoIndicador!:   FormGroup;
-  // formNuevaPublicacion!: FormGroup;
-  // formNuevoDesarrollo!:  FormGroup;
-  // formEditProyecto!:     FormGroup;
-  // formEditIndicador!:    FormGroup;
-  // formEditPublicacion!:  FormGroup;
-  // formEditDesarrollo!:   FormGroup;
-
   readonly responsabilidadOpciones = [{ val: 'D', label: 'Director' },{ val: 'C', label: 'Colaborador' },{ val: 'O', label: 'Otro' }];
   readonly faseAprobacionOpciones  = [{ val: 'PEU', label: 'Enviado a UNPA' },{ val: 'PEE', label: 'Enviado externo' }];
   readonly instanciaOpciones       = [{ val: 'C', label: 'CONACYT' },{ val: 'P', label: 'PROMEP' },{ val: 'O', label: 'Otra' }];
@@ -78,39 +61,6 @@ export class InvestigacionComponent implements OnInit {
   formDesarrollo!:  FormGroup;
 
   ngOnInit(): void { this.initForms(); this.cargarTodo(); }
-
-  // private initForms(): void {
-  //   this.formNuevoProyecto = this.fb.group({
-  //     numProyecto:      [null, [Validators.required, Validators.min(1)]],
-  //     titulo:           ['',  Validators.required],
-  //     responsabilidad:  ['D', Validators.required],
-  //     faseAprobacion:   ['PEU', Validators.required],
-  //     instancia:        ['O', Validators.required],
-  //     fechaInicio:      [''],
-  //     fechaTerminacion: [''],
-  //     fechaReprog:      [''],
-  //     avancePorcentaje: [null, [Validators.required, Validators.min(0), Validators.max(100)]]
-  //   });
-  //   this.formNuevoIndicador = this.fb.group({
-  //     numProyecto:  [null, [Validators.required, Validators.min(1)]],
-  //     numIndicador: [null, [Validators.required, Validators.min(1)]],
-  //     descripcion:  ['',  Validators.required]
-  //   });
-  //   this.formNuevaPublicacion = this.fb.group({
-  //     numPublicacion: [null, [Validators.required, Validators.min(1)]],
-  //     titulo:         ['',  Validators.required],
-  //     revista:        ['',  [Validators.required, Validators.maxLength(300)]],
-  //     fase:           ['P', Validators.required],
-  //     anio:           [new Date().getFullYear(), [Validators.required, Validators.min(2000), Validators.max(2100)]]
-  //   });
-  //   this.formNuevoDesarrollo = this.fb.group({
-  //     numActividad:          [null, [Validators.required, Validators.min(1)]],
-  //     actividad:             ['',  Validators.required],
-  //     institucionSolicitante:['',  Validators.required],
-  //     horasRequeridas:       [null, [Validators.required, Validators.min(0)]],
-  //     producto:              ['']
-  //   });
-  // }
 
   private cargarTodo(): void {
     this.service.obtenerProyectos(this.reporteId).subscribe({
@@ -146,39 +96,6 @@ export class InvestigacionComponent implements OnInit {
   private limpiarFechasProyecto(val: any): any {
     return { ...val, fechaInicio: val.fechaInicio || null, fechaTerminacion: val.fechaTerminacion || null, fechaReprog: val.fechaReprog || null };
   }
-
-  // private initForms(): void {
-  //   this.formProyecto = this.fb.group({
-  //     numProyecto:      [null, [Validators.required, Validators.min(1)]],
-  //     titulo:           ['',  Validators.required],
-  //     responsabilidad:  ['D', Validators.required],
-  //     faseAprobacion:   ['PEU', Validators.required],
-  //     instancia:        ['O', Validators.required],
-  //     fechaInicio:      [''],
-  //     fechaTerminacion: [''],
-  //     fechaReprog:      [''],
-  //     avancePorcentaje: [null, [Validators.required, Validators.min(0), Validators.max(100)]]
-  //   });
-  //   this.formIndicador = this.fb.group({
-  //     numProyecto:  [null, [Validators.required, Validators.min(1)]],
-  //     numIndicador: [null, [Validators.required, Validators.min(1)]],
-  //     descripcion:  ['',  Validators.required]
-  //   });
-  //   this.formPublicacion = this.fb.group({
-  //     numPublicacion: [null, [Validators.required, Validators.min(1)]],
-  //     titulo:         ['',  Validators.required],
-  //     revista:        ['',  Validators.required],
-  //     fase:           ['P', Validators.required],
-  //     anio:           [new Date().getFullYear(), [Validators.required, Validators.min(2000), Validators.max(2100)]]
-  //   });
-  //   this.formDesarrollo = this.fb.group({
-  //     numActividad:          [null, [Validators.required, Validators.min(1)]],
-  //     actividad:             ['',  Validators.required],
-  //     institucionSolicitante:['',  Validators.required],
-  //     horasRequeridas:       [null, [Validators.required, Validators.min(0)]],
-  //     producto:              ['']
-  //   });
-  // }
 
   private initForms(): void {
     this.formProyecto = this.fb.group({
@@ -216,12 +133,6 @@ export class InvestigacionComponent implements OnInit {
     };
     return `${p} ${n[this.tipoModal ?? 'proyecto']}`;
   }
-
-  // cerrarModal(): void {
-  //   this.modalVisible = false; this.modalGuardando = false;
-  //   this.tipoModal = null; this.editandoItemId = null;
-  //   this.cdr.detectChanges();
-  // }
 
   cerrarModal(): void {
     this.modalVisible = false; this.modalGuardando = false;
@@ -287,10 +198,65 @@ export class InvestigacionComponent implements OnInit {
     });
   }
 
+  // eliminarProyecto(id: number): void {
+  //   this.service.eliminarProyecto(this.reporteId, id).subscribe({
+  //     next: () => { this.proyectos = this.proyectos.filter(p => p.id !== id); this.indicadores = this.indicadores.filter(i => i.proyectoId !== id); this.cdr.detectChanges(); this.notificacion.emit({ msg: 'Proyecto eliminado', tipo: 'info' }); },
+  //     error: () => this.notificacion.emit({ msg: 'Error al eliminar', tipo: 'error' })
+  //   });
+  // }
+
   eliminarProyecto(id: number): void {
-    this.service.eliminarProyecto(this.reporteId, id).subscribe({
-      next: () => { this.proyectos = this.proyectos.filter(p => p.id !== id); this.indicadores = this.indicadores.filter(i => i.proyectoId !== id); this.cdr.detectChanges(); this.notificacion.emit({ msg: 'Proyecto eliminado', tipo: 'info' }); },
-      error: () => this.notificacion.emit({ msg: 'Error al eliminar', tipo: 'error' })
+    const proyecto = this.proyectos.find(p => p.id === id)!;
+    const numEliminado = proyecto.numProyecto;
+    const proyectosAfectados = this.proyectos.filter(p => p.numProyecto > numEliminado);
+
+    this.service.eliminarProyecto(this.reporteId, id).pipe(
+
+      // Reordenar proyectos
+      switchMap(() => {
+        if (proyectosAfectados.length === 0) return of(null);
+        return forkJoin(
+          proyectosAfectados.map(p =>
+            this.service.actualizarProyecto(this.reporteId, p.id, {
+              numProyecto:      p.numProyecto - 1,
+              titulo:           p.titulo,
+              responsabilidad:  p.responsabilidad,
+              faseAprobacion:   p.faseAprobacion,
+              instancia:        p.instancia,
+              fechaInicio:      p.fechaInicio,
+              fechaTerminacion: p.fechaTerminacion,
+              fechaReprog:      p.fechaReprog,
+              avancePorcentaje: p.avancePorcentaje
+            })
+          )
+        );
+      }),
+
+      // Actualizar numProyecto en indicadores de proyectos afectados
+      switchMap(() => {
+        const indicadoresAfectados = this.indicadores.filter(i =>
+          proyectosAfectados.some(p => p.id === i.proyectoId)
+        );
+        if (indicadoresAfectados.length === 0) return of(null);
+        return forkJoin(
+          indicadoresAfectados.map(i => {
+            const pAfectado = proyectosAfectados.find(p => p.id === i.proyectoId)!;
+            return this.service.actualizarIndicador(i.proyectoId, i.id, {
+              numProyecto:  pAfectado.numProyecto - 1,
+              numIndicador: i.numIndicador,
+              descripcion:  i.descripcion
+            });
+          })
+        );
+      })
+
+    ).subscribe({
+      next: () => {
+        this.cargarTodo();
+        this.cdr.detectChanges();
+        this.notificacion.emit({ msg: 'Proyecto eliminado', tipo: 'info' });
+      },
+      error: () => this.notificacion.emit({ msg: 'Error al eliminar el proyecto', tipo: 'error' })
     });
   }
 
@@ -334,10 +300,40 @@ export class InvestigacionComponent implements OnInit {
     });
   }
 
+  // eliminarIndicador(proyectoId: number, id: number): void {
+  //   this.service.eliminarIndicador(proyectoId, id).subscribe({
+  //     next: () => { this.indicadores = this.indicadores.filter(i => i.id !== id); this.cdr.detectChanges(); this.notificacion.emit({ msg: 'Indicador eliminado', tipo: 'info' }); },
+  //     error: () => this.notificacion.emit({ msg: 'Error al eliminar', tipo: 'error' })
+  //   });
+  // }
+
   eliminarIndicador(proyectoId: number, id: number): void {
-    this.service.eliminarIndicador(proyectoId, id).subscribe({
-      next: () => { this.indicadores = this.indicadores.filter(i => i.id !== id); this.cdr.detectChanges(); this.notificacion.emit({ msg: 'Indicador eliminado', tipo: 'info' }); },
-      error: () => this.notificacion.emit({ msg: 'Error al eliminar', tipo: 'error' })
+    const indicador = this.indicadores.find(i => i.id === id)!;
+    const numEliminado = indicador.numIndicador;
+    const afectados = this.indicadores.filter(i =>
+      i.proyectoId === proyectoId && i.numIndicador > numEliminado
+    );
+
+    this.service.eliminarIndicador(proyectoId, id).pipe(
+      switchMap(() => {
+        if (afectados.length === 0) return of(null);
+        return forkJoin(
+          afectados.map(i =>
+            this.service.actualizarIndicador(proyectoId, i.id, {
+              numProyecto:  i.numProyecto,
+              numIndicador: i.numIndicador - 1,
+              descripcion:  i.descripcion
+            })
+          )
+        );
+      })
+    ).subscribe({
+      next: () => {
+        this.cargarTodo();
+        this.cdr.detectChanges();
+        this.notificacion.emit({ msg: 'Indicador eliminado', tipo: 'info' });
+      },
+      error: () => this.notificacion.emit({ msg: 'Error al eliminar el indicador', tipo: 'error' })
     });
   }
 
@@ -379,10 +375,40 @@ export class InvestigacionComponent implements OnInit {
     });
   }
 
+  // eliminarPublicacion(id: number): void {
+  //   this.service.eliminarPublicacion(this.reporteId, id).subscribe({
+  //     next: () => { this.publicaciones = this.publicaciones.filter(p => p.id !== id); this.cdr.detectChanges(); this.notificacion.emit({ msg: 'Publicación eliminada', tipo: 'info' }); },
+  //     error: () => this.notificacion.emit({ msg: 'Error al eliminar', tipo: 'error' })
+  //   });
+  // }
+
   eliminarPublicacion(id: number): void {
-    this.service.eliminarPublicacion(this.reporteId, id).subscribe({
-      next: () => { this.publicaciones = this.publicaciones.filter(p => p.id !== id); this.cdr.detectChanges(); this.notificacion.emit({ msg: 'Publicación eliminada', tipo: 'info' }); },
-      error: () => this.notificacion.emit({ msg: 'Error al eliminar', tipo: 'error' })
+    const pub = this.publicaciones.find(p => p.id === id)!;
+    const numEliminado = pub.numPublicacion;
+    const afectadas = this.publicaciones.filter(p => p.numPublicacion > numEliminado);
+
+    this.service.eliminarPublicacion(this.reporteId, id).pipe(
+      switchMap(() => {
+        if (afectadas.length === 0) return of(null);
+        return forkJoin(
+          afectadas.map(p =>
+            this.service.actualizarPublicacion(this.reporteId, p.id, {
+              numPublicacion: p.numPublicacion - 1,
+              titulo:         p.titulo,
+              revista:        p.revista,
+              fase:           p.fase,
+              anio:           p.anio
+            })
+          )
+        );
+      })
+    ).subscribe({
+      next: () => {
+        this.cargarTodo();
+        this.cdr.detectChanges();
+        this.notificacion.emit({ msg: 'Publicación eliminada', tipo: 'info' });
+      },
+      error: () => this.notificacion.emit({ msg: 'Error al eliminar la publicación', tipo: 'error' })
     });
   }
 
@@ -425,10 +451,40 @@ export class InvestigacionComponent implements OnInit {
     });
   }
 
+  // eliminarDesarrollo(id: number): void {
+  //   this.service.eliminarDesarrollo(this.reporteId, id).subscribe({
+  //     next: () => { this.desarrollo = this.desarrollo.filter(d => d.id !== id); this.cdr.detectChanges(); this.notificacion.emit({ msg: 'Actividad eliminada', tipo: 'info' }); },
+  //     error: () => this.notificacion.emit({ msg: 'Error al eliminar', tipo: 'error' })
+  //   });
+  // }
+
   eliminarDesarrollo(id: number): void {
-    this.service.eliminarDesarrollo(this.reporteId, id).subscribe({
-      next: () => { this.desarrollo = this.desarrollo.filter(d => d.id !== id); this.cdr.detectChanges(); this.notificacion.emit({ msg: 'Actividad eliminada', tipo: 'info' }); },
-      error: () => this.notificacion.emit({ msg: 'Error al eliminar', tipo: 'error' })
+    const item = this.desarrollo.find(d => d.id === id)!;
+    const numEliminado = item.numActividad;
+    const afectados = this.desarrollo.filter(d => d.numActividad > numEliminado);
+
+    this.service.eliminarDesarrollo(this.reporteId, id).pipe(
+      switchMap(() => {
+        if (afectados.length === 0) return of(null);
+        return forkJoin(
+          afectados.map(d =>
+            this.service.actualizarDesarrollo(this.reporteId, d.id, {
+              numActividad:          d.numActividad - 1,
+              actividad:             d.actividad,
+              institucionSolicitante:d.institucionSolicitante,
+              horasRequeridas:       d.horasRequeridas,
+              producto:              d.producto
+            })
+          )
+        );
+      })
+    ).subscribe({
+      next: () => {
+        this.cargarTodo();
+        this.cdr.detectChanges();
+        this.notificacion.emit({ msg: 'Actividad eliminada', tipo: 'info' });
+      },
+      error: () => this.notificacion.emit({ msg: 'Error al eliminar la actividad', tipo: 'error' })
     });
   }
 

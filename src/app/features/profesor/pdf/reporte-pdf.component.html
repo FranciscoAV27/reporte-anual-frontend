@@ -1,0 +1,283 @@
+<!-- reporte-pdf.component.html -->
+<div class="pdf-root" id="reporte-pdf-content">
+
+  <!-- ══ ENCABEZADO ════════════════════════════════════════════ -->
+  <div class="pdf-header">
+    <div class="pdf-header-logo">
+      <strong>Universidad del Papaloapan</strong>
+    </div>
+    <div class="pdf-header-title">
+      Informe Anual de Actividades<br>
+      <span class="pdf-sub">Octubre {{ reporte.anio - 1 }} a Septiembre {{ reporte.anio }}</span>
+    </div>
+    <div class="pdf-header-info">
+      <strong>Profesor Investigador:</strong> {{ reporte.profesorNombre }}
+    </div>
+  </div>
+
+  <!-- ══ SECCIÓN 1: DOCENCIA ════════════════════════════════════ -->
+  <div class="pdf-section">
+    <div class="pdf-section-title">1. Docencia</div>
+
+    <div class="pdf-subsec-title">1.1 Cursos impartidos</div>
+    <table class="pdf-table">
+      <thead>
+        <tr>
+          <th>Núm</th><th>Carrera</th><th>Asignatura</th>
+          <th>Semestre</th><th>Ciclo escolar</th><th>Horas/semana</th><th>Núm. alumnos</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let c of cursos">
+          <td>{{ c.numeroCurso }}</td><td>{{ c.carrera }}</td><td>{{ c.asignatura }}</td>
+          <td>{{ c.semestre }}</td><td>{{ c.cicloEscolar }}</td>
+          <td>{{ c.horasSemana }}</td><td>{{ c.numAlumnos }}</td>
+        </tr>
+        <tr *ngIf="cursos.length === 0"><td colspan="7" class="pdf-empty">Sin registros</td></tr>
+      </tbody>
+    </table>
+
+    <div class="pdf-subsec-title">1.2 Productos de las actividades de apoyo docente</div>
+    <table class="pdf-table">
+      <thead>
+        <tr><th>Núm. de curso</th><th>Descripción de los productos</th><th>Enlace</th></tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let p of productos">
+          <td>{{ p.numeroCurso }}</td><td>{{ p.descripcion }}</td>
+          <td>{{ p.enlace ?? '—' }}</td>
+        </tr>
+        <tr *ngIf="productos.length === 0"><td colspan="3" class="pdf-empty">Sin registros</td></tr>
+      </tbody>
+    </table>
+
+    <div class="pdf-subsec-title">1.3 Asignaturas con las que presenta mayor afinidad curricular</div>
+    <table class="pdf-table">
+      <thead>
+        <tr><th>Núm.</th><th>Carrera</th><th>Asignatura</th><th>Semestre</th></tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let a of asignaturas">
+          <td>{{ a.numAsignatura }}</td><td>{{ a.carrera }}</td>
+          <td>{{ a.asignatura }}</td><td>{{ a.semestre }}</td>
+        </tr>
+        <tr *ngIf="asignaturas.length === 0"><td colspan="4" class="pdf-empty">Sin registros</td></tr>
+      </tbody>
+    </table>
+
+    <div class="pdf-subsec-title">1.4 Problemas y oportunidades</div>
+    <div class="pdf-two-col">
+      <div>
+        <div class="pdf-field-label">Oportunidades</div>
+        <div class="pdf-text-block">{{ reporte.oportunidadesDocencia || 'Sin información.' }}</div>
+      </div>
+      <div>
+        <div class="pdf-field-label">Problemas</div>
+        <div class="pdf-text-block">{{ reporte.problemasDocencia || 'Sin información.' }}</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ SECCIÓN 2: FORMACIÓN RH ═══════════════════════════════ -->
+  <div class="pdf-section">
+    <div class="pdf-section-title">2. Formación de Recursos Humanos</div>
+
+    <div class="pdf-subsec-title">2.1 Tutorías</div>
+    <table class="pdf-table">
+      <thead>
+        <tr><th>Nombre del Estudiante</th><th>Carrera</th><th>Semestre</th><th>Fecha de registro</th></tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let t of tutorias">
+          <td>{{ t.nombreAlumno }}</td><td>{{ t.carrera }}</td>
+          <td>{{ t.semestre }}</td><td>{{ t.fechaRegistro }}</td>
+        </tr>
+        <tr *ngIf="tutorias.length === 0"><td colspan="4" class="pdf-empty">Sin registros</td></tr>
+      </tbody>
+    </table>
+
+    <div class="pdf-subsec-title">2.2 Dirección de tesis</div>
+    <table class="pdf-table">
+      <thead>
+        <tr>
+          <th>Título</th><th>Estudiante</th><th>Grado</th>
+          <th>Avance %</th><th>F. Registro</th><th>F. Prog. Term.</th><th>F. Reprog.</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let t of tesis">
+          <td>{{ t.titulo }}</td><td>{{ t.nombreAlumno }}</td>
+          <td>{{ t.grado === 'L' ? 'Licenciatura' : 'Maestría' }}</td>
+          <td>{{ t.avancePorcentaje }}%</td>
+          <td>{{ t.fechaRegistro   ?? '—' }}</td>
+          <td>{{ t.fechaProgTerm   ?? '—' }}</td>
+          <td>{{ t.fechaReprogTerm ?? '—' }}</td>
+        </tr>
+        <tr *ngIf="tesis.length === 0"><td colspan="7" class="pdf-empty">Sin registros</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- ══ SECCIÓN 3: INVESTIGACIÓN ══════════════════════════════ -->
+  <div class="pdf-section">
+    <div class="pdf-section-title">3. Investigación y/o Promoción al Desarrollo</div>
+
+    <div class="pdf-subsec-title">3.1 Proyectos de investigación</div>
+    <table class="pdf-table">
+      <thead>
+        <tr>
+          <th>Núm.</th><th>Título</th><th>R</th><th>Aprobación</th>
+          <th>IA</th><th>F. Inicio</th><th>F. Term.</th><th>AGP%</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let p of proyectos">
+          <td>{{ p.numProyecto }}</td><td>{{ p.titulo }}</td>
+          <td>{{ p.responsabilidad }}</td><td>{{ p.faseAprobacion }}</td>
+          <td>{{ p.instancia }}</td>
+          <td>{{ p.fechaInicio      ?? '—' }}</td>
+          <td>{{ p.fechaTerminacion ?? '—' }}</td>
+          <td>{{ p.avancePorcentaje }}%</td>
+        </tr>
+        <tr *ngIf="proyectos.length === 0"><td colspan="8" class="pdf-empty">Sin registros</td></tr>
+      </tbody>
+    </table>
+
+    <div class="pdf-subsec-title">Indicadores cuantitativos de avance</div>
+    <ng-container *ngFor="let p of proyectos">
+      <div class="pdf-indicador-header">Proyecto {{ p.numProyecto }}: {{ p.titulo }}</div>
+      <table class="pdf-table">
+        <thead>
+          <tr><th>Núm. indicador</th><th>Descripción</th></tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let i of getIndicadoresPorProyecto(p.numProyecto)">
+            <td>{{ i.numIndicador }}</td><td>{{ i.descripcion }}</td>
+          </tr>
+          <tr *ngIf="getIndicadoresPorProyecto(p.numProyecto).length === 0">
+            <td colspan="2" class="pdf-empty">Sin indicadores</td>
+          </tr>
+        </tbody>
+      </table>
+    </ng-container>
+    <div *ngIf="proyectos.length === 0" class="pdf-empty-block">Sin proyectos registrados.</div>
+
+    <div class="pdf-subsec-title">Publicación de artículos</div>
+    <table class="pdf-table">
+      <thead>
+        <tr><th>Título</th><th>Revista</th><th>Fase</th><th>Año</th></tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let p of publicaciones">
+          <td>{{ p.titulo }}</td><td>{{ p.revista }}</td>
+          <td>{{ p.fase === 'P' ? 'Publicado' : p.fase === 'A' ? 'Aceptado' : 'Revisión' }}</td>
+          <td>{{ p.anio }}</td>
+        </tr>
+        <tr *ngIf="publicaciones.length === 0"><td colspan="4" class="pdf-empty">Sin registros</td></tr>
+      </tbody>
+    </table>
+
+    <div class="pdf-subsec-title">3.2 Promoción al desarrollo</div>
+    <table class="pdf-table">
+      <thead>
+        <tr><th>Núm.</th><th>Actividad</th><th>Institución</th><th>Horas</th><th>Producto</th></tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let d of desarrollo">
+          <td>{{ d.numActividad }}</td><td>{{ d.actividad }}</td>
+          <td>{{ d.institucionSolicitante }}</td><td>{{ d.horasRequeridas }}</td>
+          <td>{{ d.producto ?? '—' }}</td>
+        </tr>
+        <tr *ngIf="desarrollo.length === 0"><td colspan="5" class="pdf-empty">Sin registros</td></tr>
+      </tbody>
+    </table>
+
+    <div class="pdf-subsec-title">3.3 Problemas y oportunidades</div>
+    <div class="pdf-two-col">
+      <div>
+        <div class="pdf-field-label">Oportunidades</div>
+        <div class="pdf-text-block">{{ reporte.oportunidadesInvestigacion || 'Sin información.' }}</div>
+      </div>
+      <div>
+        <div class="pdf-field-label">Problemas</div>
+        <div class="pdf-text-block">{{ reporte.problemasInvestigacion || 'Sin información.' }}</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ SECCIÓN 4: GESTIÓN ═════════════════════════════════════ -->
+  <div class="pdf-section">
+    <div class="pdf-section-title">4. Gestión Académica</div>
+    <table class="pdf-table">
+      <thead>
+        <tr><th>Nombre de la actividad / comisión / puesto</th><th>Período inicio</th><th>Período fin</th></tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let g of gestion">
+          <td>{{ g.nombre }}</td>
+          <td>{{ g.periodoInicio ?? '—' }}</td>
+          <td>{{ g.periodoFin   ?? '—' }}</td>
+        </tr>
+        <tr *ngIf="gestion.length === 0"><td colspan="3" class="pdf-empty">Sin registros</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- ══ SECCIÓN 5: DIFUSIÓN ════════════════════════════════════ -->
+  <div class="pdf-section">
+    <div class="pdf-section-title">5. Difusión</div>
+    <table class="pdf-table">
+      <thead>
+        <tr><th>Nombre de la actividad</th><th>Período inicio</th><th>Período fin</th></tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let d of difusion">
+          <td>{{ d.nombre }}</td>
+          <td>{{ d.periodoInicio ?? '—' }}</td>
+          <td>{{ d.periodoFin   ?? '—' }}</td>
+        </tr>
+        <tr *ngIf="difusion.length === 0"><td colspan="3" class="pdf-empty">Sin registros</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- ══ SECCIÓN 6: COMENTARIOS ════════════════════════════════ -->
+  <div class="pdf-section">
+    <div class="pdf-section-title">6. Comentarios Generales</div>
+    <div class="pdf-text-block">{{ reporte.comentariosGenerales || 'Sin comentarios.' }}</div>
+  </div>
+
+  <!-- ══ SECCIÓN 7: DISTRIBUCIÓN DE TIEMPO ═════════════════════ -->
+  <div class="pdf-section">
+    <div class="pdf-section-title">7. Distribución de Tiempo</div>
+    <table class="pdf-table">
+      <thead>
+        <tr>
+          <th style="width:52%">Actividad Académica</th>
+          <th>Ciclo (oct–feb)</th>
+          <th>Ciclo (mar–jul)</th>
+          <th>Verano (jul–sept)</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let f of distribucion">
+          <td>{{ f.actividadAcademica }}</td>
+          <td class="pdf-center">{{ f.horasCicloOi }}</td>
+          <td class="pdf-center">{{ f.horasCicloPv }}</td>
+          <td class="pdf-center">{{ f.horasVerano }}</td>
+        </tr>
+        <tr class="pdf-total-row">
+          <td><strong>Suma</strong></td>
+          <td class="pdf-center"><strong>{{ totalOi }}</strong></td>
+          <td class="pdf-center"><strong>{{ totalPv }}</strong></td>
+          <td class="pdf-center"><strong>{{ totalVerano }}</strong></td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="pdf-fecha-entrega" *ngIf="reporte.enviadoEn">
+      <strong>Fecha de entrega:</strong> {{ reporte.enviadoEn | date:'dd/MM/yyyy' }}
+    </div>
+  </div>
+
+</div>

@@ -50,7 +50,7 @@
   <ng-container [formGroup]="formModal">
 
     <div class="field-wrap">
-      <label>Nombre de la actividad / comisión / puesto <span class="required">*</span></label>
+      <label>Nombre de la actividad<span class="required">*</span></label>
       <input type="text" formControlName="nombre" placeholder="Nombre de la actividad">
       <span class="field-error" *ngIf="formModal.get('nombre')?.invalid && formModal.get('nombre')?.touched">
         El nombre de la actividad es obligatorio.

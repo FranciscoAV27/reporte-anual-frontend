@@ -14,6 +14,27 @@ import { DifusionComponent } from '../sections/difusion/difusion.component';
 import { ComentariosComponent } from '../sections/comentarios/comentarios.component';
 import { DistribucionTiempoComponent } from '../sections/distribucion-tiempo/distribucion-tiempo.component';
 
+// import { PdfService } from '../../../../core/services/pdf.service';
+// import { ReportePdfComponent } from '../../pdf/reporte-pdf.component';
+// import { DocenciaService } from '../../services/docencia.service';
+// import { FormacionRhService } from '../../services/formacion-rh.service';
+// import { InvestigacionService } from '../../services/investigacion.service';
+// import { GestionDifusionService } from '../../services/gestion-difusion.service';
+// import { DistribucionTiempoService } from '../../services/distribucion-tiempo.service';
+// import { forkJoin } from 'rxjs';
+
+// Agrega estos imports:
+import { PdfService, DatosPdf } from '../../../../core/services/pdf.service';
+import { DocenciaService } from '../../services/docencia.service';
+import { FormacionRhService } from '../../services/formacion-rh.service';
+import { InvestigacionService } from '../../services/investigacion.service';
+import { GestionDifusionService } from '../../services/gestion-difusion.service';
+import { DistribucionTiempoService } from '../../services/distribucion-tiempo.service';
+import { forkJoin } from 'rxjs';
+import { switchMap } from 'rxjs/operators';
+//import { ReportePdfComponent } from '../../pdf/reporte-pdf.component';
+
+
 type Vista = 'home' | 'form' | 'historial';
 
 @Component({
@@ -35,6 +56,14 @@ export class ReporteFormComponent implements OnInit {
   private readonly cdr            = inject(ChangeDetectorRef);
   private readonly ngZone         = inject(NgZone);
 
+  // Inyecta los servicios:
+  private readonly pdfService          = inject(PdfService);
+  private readonly docenciaService     = inject(DocenciaService);
+  private readonly formacionRhService  = inject(FormacionRhService);
+  private readonly investigacionService= inject(InvestigacionService);
+  private readonly gestionDifService   = inject(GestionDifusionService);
+  private readonly distribucionService = inject(DistribucionTiempoService);
+
   reporte: ReporteResponse | null = null;
   cargando  = true;
   enviando  = false;
@@ -45,6 +74,10 @@ export class ReporteFormComponent implements OnInit {
 
   vistaActiva: Vista = 'home';
   seccionActiva = 0; // 0–6
+
+  // Estado del PDF
+  // datosPdf: any = null;
+  generandoPdf = false;
 
   readonly secciones   = SECCIONES;
   readonly anioActual  = new Date().getFullYear();
@@ -253,5 +286,97 @@ export class ReporteFormComponent implements OnInit {
 
   get formularioEditable(): boolean {
     return this.reporte?.estado === 'BORRADOR' || this.reporte?.estado === 'RECHAZADO';
+  }
+
+  // previsualizarPdf(): void {
+  //   if (!this.reporte || this.generandoPdf) return;
+  //   this.generandoPdf = true;
+  //   const id = this.reporte.id;
+
+  //   forkJoin({
+  //     cursos:       this.docenciaService.obtenerCursos(id),
+  //     productos:    this.docenciaService.obtenerProductos(id),
+  //     asignaturas:  this.docenciaService.obtenerAsignaturas(id),
+  //     tutorias:     this.formacionRhService.obtenerTutorias(id),
+  //     tesis:        this.formacionRhService.obtenerTesis(id),
+  //     proyectos:    this.investigacionService.obtenerProyectos(id),
+  //     publicaciones:this.investigacionService.obtenerPublicaciones(id),
+  //     desarrollo:   this.investigacionService.obtenerDesarrollo(id),
+  //     gestion:      this.gestionDifService.obtenerGestion(id),
+  //     difusion:     this.gestionDifService.obtenerDifusion(id),
+  //     distribucion: this.distribucionService.obtener(id),
+  //   }).subscribe({
+  //     next: async (datos) => {
+  //       // Cargar indicadores de todos los proyectos
+  //       if (datos.proyectos.length > 0) {
+  //         const indicadoresArrays = await Promise.all(
+  //           datos.proyectos.map(p =>
+  //             this.investigacionService.obtenerIndicadores(p.id).toPromise()
+  //           )
+  //         );
+  //         (datos as any).indicadores = indicadoresArrays.flat();
+  //       } else {
+  //         (datos as any).indicadores = [];
+  //       }
+  //       this.datosPdf = datos;
+  //       this.cdr.detectChanges();
+  //       setTimeout(async () => {
+  //         await this.pdfService.generarPDF('reporte-pdf-content', `Reporte_${this.reporte!.anio}_${this.reporte!.profesorNombre}`);
+  //         this.generandoPdf = false;
+  //         this.cdr.detectChanges();
+  //       }, 500);
+  //     },
+  //     error: () => {
+  //       this.generandoPdf = false;
+  //       this.cdr.detectChanges();
+  //       this.mostrarToast('Error al generar el PDF', 'error');
+  //     }
+  //   });
+  // }
+
+  // Método:
+  previsualizarPdf(): void {
+    if (!this.reporte || this.generandoPdf) return;
+    this.generandoPdf = true;
+    const id = this.reporte.id;
+
+    forkJoin({
+      cursos:        this.docenciaService.obtenerCursos(id),
+      productos:     this.docenciaService.obtenerProductos(id),
+      asignaturas:   this.docenciaService.obtenerAsignaturas(id),
+      tutorias:      this.formacionRhService.obtenerTutorias(id),
+      tesis:         this.formacionRhService.obtenerTesis(id),
+      proyectos:     this.investigacionService.obtenerProyectos(id),
+      publicaciones: this.investigacionService.obtenerPublicaciones(id),
+      desarrollo:    this.investigacionService.obtenerDesarrollo(id),
+      gestion:       this.gestionDifService.obtenerGestion(id),
+      difusion:      this.gestionDifService.obtenerDifusion(id),
+      distribucion:  this.distribucionService.obtener(id),
+    }).pipe(
+      switchMap(datos =>
+        forkJoin(
+          datos.proyectos.length > 0
+            ? datos.proyectos.map(p => this.investigacionService.obtenerIndicadores(p.id))
+            : [Promise.resolve([])]
+        ).pipe(
+          switchMap(indicadoresArrays => {
+            const indicadores = indicadoresArrays.flat();
+            const datosPdf: DatosPdf = { reporte: this.reporte!, ...datos, indicadores };
+            return [datosPdf];
+          })
+        )
+      )
+    ).subscribe({
+      next: (datosPdf) => {
+        this.pdfService.generarReporte(datosPdf);
+        this.generandoPdf = false;
+        this.cdr.detectChanges();
+      },
+      error: () => {
+        this.generandoPdf = false;
+        this.cdr.detectChanges();
+        this.mostrarToast('Error al generar el PDF', 'error');
+      }
+    });
   }
 }

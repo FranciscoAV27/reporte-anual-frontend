@@ -15,6 +15,7 @@ export interface ReporteResponse {
   id: number;
   profesorId: number;
   profesorNombre: string;
+  profesorApellidos?: string;
   anio: number;
   estado: EstadoReporte;
   comentariosAdmin?: string;

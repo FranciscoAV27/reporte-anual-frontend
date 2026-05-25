@@ -130,9 +130,9 @@ export class DistribucionTiempoComponent implements OnInit {
     });
   }
 
-  get fechaEnvio(): string {
-    return this.reporte?.enviadoEn
-      ? new Date(this.reporte.enviadoEn).toLocaleDateString('es-MX')
-      : '—';
-  }
+  // get fechaEnvio(): string {
+  //   return this.reporte?.enviadoEn
+  //     ? new Date(this.reporte.enviadoEn).toLocaleDateString('es-MX')
+  //     : '—';
+  // }
 }

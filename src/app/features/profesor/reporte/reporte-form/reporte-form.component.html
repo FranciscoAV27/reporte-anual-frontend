@@ -11,7 +11,10 @@
     <div class="topbar-divider"></div>
     <nav class="topbar-nav">
       <button class="topbar-nav-btn" [class.active]="vistaActiva === 'home'"     (click)="setVista('home')">Inicio</button>
-      <button class="topbar-nav-btn" [class.active]="vistaActiva === 'form'"     (click)="setVista('form')">Mi Reporte {{ anioActual }}</button>
+      <button class="topbar-nav-btn" [class.active]="vistaActiva === 'form'"
+        (click)="setVista('form')">
+        Mi Reporte {{ anioActual - 1 }}-{{ anioActual }}
+      </button>
       <button class="topbar-nav-btn" [class.active]="vistaActiva === 'historial'"(click)="setVista('historial')">Historial</button>
     </nav>
     <div class="topbar-right">
@@ -111,7 +114,9 @@
             {{ enviando ? 'Enviando...' : 'Enviar a revisión →' }}
           </button>
         </div>
-        <button class="btn-preview-pdf">👁 Previsualizar PDF</button>
+        <button class="btn-preview-pdf" (click)="previsualizarPdf()" [disabled]="generandoPdf">
+          {{ generandoPdf ? '⏳ Generando...' : '👁 Previsualizar PDF' }}
+        </button>
       </div>
 
     </aside>
@@ -140,6 +145,7 @@
             <app-docencia
               *ngIf="reporte"
               [reporteId]="reporte.id"
+              [anioReporte]="reporte.anio"
               [problemasDocencia]="textosForm.get('problemasDocencia')!.value"
               [oportunidadesDocencia]="textosForm.get('oportunidadesDocencia')!.value"
               (problemasChange)="textosForm.get('problemasDocencia')!.setValue($event)"
@@ -304,3 +310,22 @@
   [class.info]="toastTipo === 'info'">
   {{ toastMsg }}
 </div>
+
+<!-- Plantilla PDF oculta -->
+<!-- <div style="position:absolute;left:-9999px;top:0;z-index:-1;" *ngIf="datosPdf && reporte">
+  <app-reporte-pdf
+    [reporte]="reporte"
+    [cursos]="datosPdf.cursos"
+    [productos]="datosPdf.productos"
+    [asignaturas]="datosPdf.asignaturas"
+    [tutorias]="datosPdf.tutorias"
+    [tesis]="datosPdf.tesis"
+    [proyectos]="datosPdf.proyectos"
+    [indicadores]="datosPdf.indicadores"
+    [publicaciones]="datosPdf.publicaciones"
+    [desarrollo]="datosPdf.desarrollo"
+    [gestion]="datosPdf.gestion"
+    [difusion]="datosPdf.difusion"
+    [distribucion]="datosPdf.distribucion">
+  </app-reporte-pdf>
+</div> -->
