@@ -266,8 +266,10 @@ export class DocenciaComponent implements OnInit {
   @Output() registroAgregado       = new EventEmitter<void>();
   @Output() solicitarGuardarTextos = new EventEmitter<void>();
   @Output() notificacion           = new EventEmitter<{msg: string, tipo: string}>();
+  @Output() registroModificado = new EventEmitter<void>();
 
   @Input() anioReporte!: number; // ← nuevo
+  @Input() editable: boolean = true;
 
   private readonly docenciaService = inject(DocenciaService);
   private readonly catalogoService = inject(CatalogoService);
@@ -471,6 +473,7 @@ export class DocenciaComponent implements OnInit {
           : this.cursos.map(c => c.id === this.editandoItemId ? r : c);
         this.modalGuardando = false; this.cerrarModal(); this.cdr.detectChanges();
         if (this.modoModal === 'agregar') this.registroAgregado.emit();
+        this.registroModificado.emit();
         this.notificacion.emit({ msg: this.modoModal === 'agregar' ? 'Curso agregado correctamente' : 'Curso actualizado', tipo: 'success' });
       },
       error: () => { this.modalGuardando = false; this.cdr.detectChanges(); this.notificacion.emit({ msg: 'Error al guardar el curso', tipo: 'error' }); }
@@ -540,6 +543,7 @@ export class DocenciaComponent implements OnInit {
         this.cargarTodo();
         this.cdr.detectChanges();
         this.notificacion.emit({ msg: 'Curso eliminado correctamente', tipo: 'info' });
+        this.registroModificado.emit();
       },
       error: () => this.notificacion.emit({ msg: 'Error al eliminar el curso', tipo: 'error' })
     });
@@ -569,6 +573,7 @@ export class DocenciaComponent implements OnInit {
         this.productos = this.modoModal === 'agregar' ? [...this.productos, r] : this.productos.map(p => p.id === this.editandoItemId ? r : p);
         this.modalGuardando = false; this.cerrarModal(); this.cdr.detectChanges();
         if (this.modoModal === 'agregar') this.registroAgregado.emit();
+        this.registroModificado.emit();
         this.notificacion.emit({ msg: this.modoModal === 'agregar' ? 'Producto agregado correctamente' : 'Producto actualizado', tipo: 'success' });
       },
       error: () => { this.modalGuardando = false; this.cdr.detectChanges(); this.notificacion.emit({ msg: 'Error al guardar el producto', tipo: 'error' }); }
@@ -589,6 +594,7 @@ export class DocenciaComponent implements OnInit {
         this.productos = this.productos.filter(p => p.id !== id);
         this.cdr.detectChanges();
         this.notificacion.emit({ msg: 'Producto eliminado', tipo: 'info' });
+        this.registroModificado.emit();
       },
       error: () => this.notificacion.emit({ msg: 'Error al eliminar', tipo: 'error' })
     });
@@ -636,6 +642,7 @@ export class DocenciaComponent implements OnInit {
         this.asignaturas = this.modoModal === 'agregar' ? [...this.asignaturas, r] : this.asignaturas.map(a => a.id === this.editandoItemId ? r : a);
         this.modalGuardando = false; this.cerrarModal(); this.cdr.detectChanges();
         if (this.modoModal === 'agregar') this.registroAgregado.emit();
+        this.registroModificado.emit();
         this.notificacion.emit({ msg: this.modoModal === 'agregar' ? 'Asignatura agregada correctamente' : 'Asignatura actualizada', tipo: 'success' });
       },
       error: () => { this.modalGuardando = false; this.cdr.detectChanges(); this.notificacion.emit({ msg: 'Error al guardar la asignatura', tipo: 'error' }); }
@@ -673,6 +680,7 @@ export class DocenciaComponent implements OnInit {
         this.cargarTodo();
         this.cdr.detectChanges();
         this.notificacion.emit({ msg: 'Asignatura eliminada', tipo: 'info' });
+        this.registroModificado.emit();
       },
       error: () => this.notificacion.emit({ msg: 'Error al eliminar', tipo: 'error' })
     });

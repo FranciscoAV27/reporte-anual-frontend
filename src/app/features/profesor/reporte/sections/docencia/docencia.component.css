@@ -14,9 +14,10 @@
 
 /* ── Tabla ──────────────────────────────────────────────────── */
 .table-wrap {
-  border: 1px solid #eee;
   border-radius: 10px;
   overflow: hidden;
+  border: 1px solid #ddd;
+  margin-bottom: 10px;
   overflow-x: auto;
 }
 
@@ -26,36 +27,36 @@
   min-width: 480px;
 }
 
+/* Encabezado verde oscuro */
+.data-table thead tr { background: #007D68; }
 .data-table th {
   font-size: 11px; font-weight: 700;
-  color: #888; letter-spacing: .4px;
+  color: white; letter-spacing: .5px;
   text-transform: uppercase;
-  padding: 10px 14px; text-align: left;
-  background: #f7f7f7;
-  border-bottom: 1px solid #eee;
-  white-space: nowrap;
+  padding: 11px 16px; text-align: left;
+  border: none; white-space: nowrap;
 }
+
+/* Filas */
+.data-table tbody tr {
+  background: white;
+  border-bottom: 1px solid #eee;
+  transition: background .12s;
+}
+.data-table tbody tr:last-child { border-bottom: none; }
+.data-table tbody tr:nth-child(even) { background: #f9f9f9; }
+.data-table tbody tr:hover td { background: #F0FAF8; }
 
 .data-table td {
-  padding: 11px 14px;
+  padding: 11px 16px;
   font-size: 13px; color: #555;
-  border-bottom: 1px solid #eee;
   vertical-align: middle;
 }
-
-.data-table tbody tr:last-child td { border-bottom: none; }
-.data-table tbody tr { transition: background .12s; }
-.data-table tbody tr:hover td { background: #f0faf8; }
-
-.data-table .edit-row td,
-.data-table .edit-row:hover td { background: #fffef5; }
-.data-table .new-row td,
-.data-table .new-row:hover td { background: #f0faf8; }
 
 /* ── Helpers de celda ───────────────────────────────────────── */
 .th-num   { width: 36px; text-align: center; }
 .td-num   { text-align: center; color: #aaa; font-size: 12px; }
-.td-actions { text-align: right; width: 72px; white-space: nowrap; }
+.td-actions { text-align: right; width: 140px; white-space: nowrap; }
 .mono     { font-size: 13px; color: #666; }
 .td-link  {
   color: #007D68; font-size: 12px;
@@ -75,27 +76,43 @@
 
 /* ── Botones de fila ────────────────────────────────────────── */
 .btn-icon {
-  background: none; border: none;
-  padding: 4px 6px; border-radius: 4px;
-  font-size: 13px; cursor: pointer;
-  display: inline-flex; align-items: center;
-  transition: background .12s; line-height: 1;
+  background: none;
+  padding: 4px 10px;
+  border-radius: 5px;
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  transition: all .15s;
+  line-height: 1;
+  margin-left: 4px;
 }
-.btn-icon.edit  { color: #D4A91D; }
-.btn-icon.edit:hover  { background: #FDF6E3; }
-.btn-icon.del   { color: #B31818; }
-.btn-icon.del:hover   { background: #FDEAEA; }
-.btn-icon.save  { color: #007D68; }
-.btn-icon.save:hover  { background: #E0F2EE; }
+.btn-icon.edit {
+  border: 1.5px solid #007D68;
+  color: #007D68;
+}
+.btn-icon.edit:hover {
+  background: #007D68;
+  color: white;
+}
+.btn-icon.del {
+  border: 1.5px solid #B31818;
+  color: #B31818;
+}
+.btn-icon.del:hover {
+  background: #B31818;
+  color: white;
+}
 
-/* ── Inputs de tabla ────────────────────────────────────────── */
+/* ── Inputs de tabla (modo edición inline, por si acaso) ────── */
 .ti {
   width: 100%; padding: 5px 8px;
   border: 1px solid #ddd; border-radius: 5px;
   font-size: 13px; color: #1a1a1a;
   background: white; outline: none;
   min-width: 60px;
-  transition: border-color .15s, box-shadow .15s;
+  transition: border-color .15s;
 }
 .ti:focus { border-color: #007D68; box-shadow: 0 0 0 2px rgba(0,125,104,.1); }
 
@@ -103,12 +120,14 @@
 .btn-add {
   display: inline-flex; align-items: center; gap: 5px;
   margin-top: 10px;
-  border: 1.5px dashed #ccc; background: none;
+  border: 1.5px dashed #007D68;
+  background: none;
   color: #007D68; font-size: 12px; font-weight: 600;
   padding: 6px 13px; border-radius: 6px;
   cursor: pointer; transition: all .15s;
 }
-.btn-add:hover { border-color: #007D68; background: #E0F2EE; }
+.btn-add:hover { background: #E0F2EE; }
+.btn-add:disabled { border-color: #ccc; color: #ccc; cursor: not-allowed; }
 
 /* ── Campos de texto ────────────────────────────────────────── */
 .two-col {
@@ -130,7 +149,11 @@
   resize: vertical; min-height: 90px; line-height: 1.5;
   width: 100%;
 }
-.field-textarea:focus { outline: none; border-color: #007D68; box-shadow: 0 0 0 3px rgba(0,125,104,.08); }
+.field-textarea:focus {
+  outline: none;
+  border-color: #007D68;
+  box-shadow: 0 0 0 3px rgba(0,125,104,.08);
+}
 
 /* ── Guardar textos ─────────────────────────────────────────── */
 .textos-save-row { display: flex; justify-content: flex-end; margin-top: 10px; }
@@ -142,3 +165,13 @@
   cursor: pointer; transition: all .15s;
 }
 .btn-save-text:hover { background: #444; }
+
+/* ── Badge fase publicación ─────────────────────────────────── */
+.badge-fase {
+  display: inline-flex; align-items: center;
+  font-size: 11px; font-weight: 600;
+  padding: 2px 8px; border-radius: 4px;
+}
+.fase-P { background: #EAFAEC; color: #18B32A; }
+.fase-A { background: #EBF0FA; color: #1F4F97; }
+.fase-R { background: #FDF6E3; color: #7a5a00; }

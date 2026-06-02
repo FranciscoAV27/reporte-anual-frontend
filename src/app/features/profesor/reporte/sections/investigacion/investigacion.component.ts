@@ -27,6 +27,8 @@ export class InvestigacionComponent implements OnInit {
   @Output() registroAgregado         = new EventEmitter<void>();
   @Output() solicitarGuardarTextos   = new EventEmitter<void>();
   @Output() notificacion             = new EventEmitter<{msg: string, tipo: string}>();
+  @Output() registroModificado       = new EventEmitter<void>();
+  @Input() editable: boolean = true;
 
   private readonly service = inject(InvestigacionService);
   private readonly fb      = inject(FormBuilder);
@@ -192,6 +194,7 @@ export class InvestigacionComponent implements OnInit {
         this.proyectos = this.modoModal === 'agregar' ? [...this.proyectos, r] : this.proyectos.map(p => p.id === this.editandoItemId ? r : p);
         this.modalGuardando = false; this.cerrarModal(); this.cdr.detectChanges();
         if (this.modoModal === 'agregar') this.registroAgregado.emit();
+        this.registroModificado.emit();
         this.notificacion.emit({ msg: this.modoModal === 'agregar' ? 'Proyecto agregado correctamente' : 'Proyecto actualizado', tipo: 'success' });
       },
       error: () => { this.modalGuardando = false; this.cdr.detectChanges(); this.notificacion.emit({ msg: 'Error al guardar el proyecto', tipo: 'error' }); }
@@ -255,6 +258,7 @@ export class InvestigacionComponent implements OnInit {
         this.cargarTodo();
         this.cdr.detectChanges();
         this.notificacion.emit({ msg: 'Proyecto eliminado', tipo: 'info' });
+        this.registroModificado.emit();
       },
       error: () => this.notificacion.emit({ msg: 'Error al eliminar el proyecto', tipo: 'error' })
     });
@@ -294,6 +298,7 @@ export class InvestigacionComponent implements OnInit {
         this.indicadores = this.modoModal === 'agregar' ? [...this.indicadores, r] : this.indicadores.map(i => i.id === this.editandoItemId ? r : i);
         this.modalGuardando = false; this.cerrarModal(); this.cdr.detectChanges();
         if (this.modoModal === 'agregar') this.registroAgregado.emit();
+        this.registroModificado.emit();
         this.notificacion.emit({ msg: this.modoModal === 'agregar' ? 'Indicador agregado correctamente' : 'Indicador actualizado', tipo: 'success' });
       },
       error: () => { this.modalGuardando = false; this.cdr.detectChanges(); this.notificacion.emit({ msg: 'Error al guardar el indicador', tipo: 'error' }); }
@@ -332,6 +337,7 @@ export class InvestigacionComponent implements OnInit {
         this.cargarTodo();
         this.cdr.detectChanges();
         this.notificacion.emit({ msg: 'Indicador eliminado', tipo: 'info' });
+        this.registroModificado.emit();
       },
       error: () => this.notificacion.emit({ msg: 'Error al eliminar el indicador', tipo: 'error' })
     });
@@ -369,6 +375,7 @@ export class InvestigacionComponent implements OnInit {
         this.publicaciones = this.modoModal === 'agregar' ? [...this.publicaciones, r] : this.publicaciones.map(p => p.id === this.editandoItemId ? r : p);
         this.modalGuardando = false; this.cerrarModal(); this.cdr.detectChanges();
         if (this.modoModal === 'agregar') this.registroAgregado.emit();
+        this.registroModificado.emit();
         this.notificacion.emit({ msg: this.modoModal === 'agregar' ? 'Publicación agregada correctamente' : 'Publicación actualizada', tipo: 'success' });
       },
       error: () => { this.modalGuardando = false; this.cdr.detectChanges(); this.notificacion.emit({ msg: 'Error al guardar la publicación', tipo: 'error' }); }
@@ -407,6 +414,7 @@ export class InvestigacionComponent implements OnInit {
         this.cargarTodo();
         this.cdr.detectChanges();
         this.notificacion.emit({ msg: 'Publicación eliminada', tipo: 'info' });
+        this.registroModificado.emit();
       },
       error: () => this.notificacion.emit({ msg: 'Error al eliminar la publicación', tipo: 'error' })
     });
@@ -445,6 +453,7 @@ export class InvestigacionComponent implements OnInit {
         this.desarrollo = this.modoModal === 'agregar' ? [...this.desarrollo, r] : this.desarrollo.map(d => d.id === this.editandoItemId ? r : d);
         this.modalGuardando = false; this.cerrarModal(); this.cdr.detectChanges();
         if (this.modoModal === 'agregar') this.registroAgregado.emit();
+        this.registroModificado.emit();
         this.notificacion.emit({ msg: this.modoModal === 'agregar' ? 'Actividad agregada correctamente' : 'Actividad actualizada', tipo: 'success' });
       },
       error: () => { this.modalGuardando = false; this.cdr.detectChanges(); this.notificacion.emit({ msg: 'Error al guardar la actividad', tipo: 'error' }); }
@@ -483,6 +492,7 @@ export class InvestigacionComponent implements OnInit {
         this.cargarTodo();
         this.cdr.detectChanges();
         this.notificacion.emit({ msg: 'Actividad eliminada', tipo: 'info' });
+        this.registroModificado.emit();
       },
       error: () => this.notificacion.emit({ msg: 'Error al eliminar la actividad', tipo: 'error' })
     });

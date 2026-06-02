@@ -19,6 +19,8 @@ export class DifusionComponent implements OnInit {
   @Input() reporteId!: number;
   @Output() registroAgregado = new EventEmitter<void>();
   @Output() notificacion     = new EventEmitter<{msg: string, tipo: string}>();
+  @Output() registroModificado = new EventEmitter<void>();
+  @Input() editable: boolean = true;
 
   private readonly service = inject(GestionDifusionService);
   private readonly fb      = inject(FormBuilder);
@@ -154,6 +156,7 @@ export class DifusionComponent implements OnInit {
         this.actividades = this.modoModal === 'agregar' ? [...this.actividades, r] : this.actividades.map(a => a.id === this.editandoItemId ? r : a);
         this.modalGuardando = false; this.cerrarModal(); this.cdr.detectChanges();
         if (this.modoModal === 'agregar') this.registroAgregado.emit();
+        this.registroModificado.emit();
         this.notificacion.emit({ msg: this.modoModal === 'agregar' ? 'Actividad agregada correctamente' : 'Actividad actualizada', tipo: 'success' });
       },
       error: () => { this.modalGuardando = false; this.cdr.detectChanges(); this.notificacion.emit({ msg: 'Error al guardar la actividad', tipo: 'error' }); }
@@ -191,6 +194,7 @@ export class DifusionComponent implements OnInit {
         this.cargar();
         this.cdr.detectChanges();
         this.notificacion.emit({ msg: 'Actividad eliminada', tipo: 'info' });
+        this.registroModificado.emit();
       },
       error: () => this.notificacion.emit({ msg: 'Error al eliminar la actividad', tipo: 'error' })
     });

@@ -18,10 +18,21 @@ export class DistribucionTiempoComponent implements OnInit {
   @Input() reporteId!: number;
   @Input() reporte!: ReporteResponse;
   @Output() registroAgregado = new EventEmitter<void>();
+  @Output() registroModificado = new EventEmitter<void>();
+  @Input() editable: boolean = true;
 
   private readonly service = inject(DistribucionTiempoService);
   private readonly fb      = inject(FormBuilder);
   private readonly cdr     = inject(ChangeDetectorRef);
+
+  // Agrega estas propiedades:
+  readonly MAX_HORAS = 40;
+
+  get totalOiExcede(): boolean { return this.totalOi > this.MAX_HORAS; }
+  get totalPvExcede(): boolean { return this.totalPv > this.MAX_HORAS; }
+  get totalVeranoExcede(): boolean { return this.totalVerano > this.MAX_HORAS; }
+  get hayExceso(): boolean { return this.totalOiExcede || this.totalPvExcede || this.totalVeranoExcede; }
+
 
   filas: DistribucionTiempoResponse[] = [];
   colapsado  = false;
@@ -102,10 +113,40 @@ export class DistribucionTiempoComponent implements OnInit {
 
   toggleSeccion(): void { this.colapsado = !this.colapsado; }
 
+  // guardar(): void {
+  //   if (this.tablaForm.invalid || this.guardando) return;
+  //   this.guardando = true;
+
+  //   const requests = this.filas.map(f => {
+  //     const val = this.tablaForm.get(`fila_${f.id}`)?.value;
+  //     return this.service.actualizar(this.reporteId, f.id, {
+  //       actividadAcademica: f.actividadAcademica,
+  //       orden:              f.orden,
+  //       horasCicloOi:       Number(val.horasCicloOi),
+  //       horasCicloPv:       Number(val.horasCicloPv),
+  //       horasVerano:        Number(val.horasVerano),
+  //     });
+  //   });
+
+  //   forkJoin(requests).subscribe({
+  //     next: (actualizadas) => {
+  //       this.filas    = this.ordenarFilas(actualizadas);
+  //       this.guardando = false;
+  //       this.cdr.detectChanges();
+  //     },
+  //     error: () => {
+  //       this.guardando = false;
+  //       this.cdr.detectChanges();
+  //     }
+  //   });
+  // }
+
   guardar(): void {
     if (this.tablaForm.invalid || this.guardando) return;
-    this.guardando = true;
 
+    if (this.hayExceso) return; // validación estricta — no guarda si excede
+
+    this.guardando = true;
     const requests = this.filas.map(f => {
       const val = this.tablaForm.get(`fila_${f.id}`)?.value;
       return this.service.actualizar(this.reporteId, f.id, {
@@ -121,6 +162,7 @@ export class DistribucionTiempoComponent implements OnInit {
       next: (actualizadas) => {
         this.filas    = this.ordenarFilas(actualizadas);
         this.guardando = false;
+        this.registroModificado.emit();
         this.cdr.detectChanges();
       },
       error: () => {

@@ -20,6 +20,8 @@ export class FormacionRhComponent implements OnInit {
   @Input() reporteId!: number;
   @Output() registroAgregado = new EventEmitter<void>();
   @Output() notificacion     = new EventEmitter<{msg: string, tipo: string}>();
+  @Output() registroModificado = new EventEmitter<void>();
+  @Input() editable: boolean = true;
 
   private readonly service         = inject(FormacionRhService);
   private readonly catalogoService = inject(CatalogoService);
@@ -112,6 +114,7 @@ export class FormacionRhComponent implements OnInit {
         this.tutorias = this.modoModal === 'agregar' ? [...this.tutorias, r] : this.tutorias.map(t => t.id === this.editandoItemId ? r : t);
         this.modalGuardando = false; this.cerrarModal(); this.cdr.detectChanges();
         if (this.modoModal === 'agregar') this.registroAgregado.emit();
+        this.registroModificado.emit();
         this.notificacion.emit({ msg: this.modoModal === 'agregar' ? 'Tutoría agregada correctamente' : 'Tutoría actualizada', tipo: 'success' });
       },
       error: () => { this.modalGuardando = false; this.cdr.detectChanges(); this.notificacion.emit({ msg: 'Error al guardar la tutoría', tipo: 'error' }); }
@@ -120,7 +123,7 @@ export class FormacionRhComponent implements OnInit {
 
   eliminarTutoria(id: number): void {
     this.service.eliminarTutoria(this.reporteId, id).subscribe({
-      next: () => { this.tutorias = this.tutorias.filter(t => t.id !== id); this.cdr.detectChanges(); this.notificacion.emit({ msg: 'Tutoría eliminada', tipo: 'info' }); },
+      next: () => { this.tutorias = this.tutorias.filter(t => t.id !== id); this.cdr.detectChanges(); this.notificacion.emit({ msg: 'Tutoría eliminada', tipo: 'info' }); this.registroModificado.emit();},
       error: () => this.notificacion.emit({ msg: 'Error al eliminar', tipo: 'error' })
     });
   }
@@ -159,6 +162,7 @@ export class FormacionRhComponent implements OnInit {
         this.tesis = this.modoModal === 'agregar' ? [...this.tesis, r] : this.tesis.map(t => t.id === this.editandoItemId ? r : t);
         this.modalGuardando = false; this.cerrarModal(); this.cdr.detectChanges();
         if (this.modoModal === 'agregar') this.registroAgregado.emit();
+        this.registroModificado.emit();
         this.notificacion.emit({ msg: this.modoModal === 'agregar' ? 'Tesis agregada correctamente' : 'Tesis actualizada', tipo: 'success' });
       },
       error: () => { this.modalGuardando = false; this.cdr.detectChanges(); this.notificacion.emit({ msg: 'Error al guardar la tesis', tipo: 'error' }); }
@@ -167,7 +171,7 @@ export class FormacionRhComponent implements OnInit {
 
   eliminarTesis(id: number): void {
     this.service.eliminarTesis(this.reporteId, id).subscribe({
-      next: () => { this.tesis = this.tesis.filter(t => t.id !== id); this.cdr.detectChanges(); this.notificacion.emit({ msg: 'Tesis eliminada', tipo: 'info' }); },
+      next: () => { this.tesis = this.tesis.filter(t => t.id !== id); this.cdr.detectChanges(); this.notificacion.emit({ msg: 'Tesis eliminada', tipo: 'info' }); this.registroModificado.emit();},
       error: () => this.notificacion.emit({ msg: 'Error al eliminar', tipo: 'error' })
     });
   }

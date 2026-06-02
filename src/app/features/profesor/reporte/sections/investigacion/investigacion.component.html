@@ -17,15 +17,15 @@
           <td class="mono">{{ p.fechaInicio ?? '—' }}</td>
           <td class="mono">{{ p.fechaTerminacion ?? '—' }}</td>
           <td class="mono">{{ p.avancePorcentaje }}%</td>
-          <td class="td-actions">
-            <button class="btn-icon edit" (click)="abrirEditarProyecto(p)">✏️</button>
-            <button class="btn-icon del"  (click)="eliminarProyecto(p.id)">✕</button>
+          <td class="td-actions" *ngIf="editable">
+            <button class="btn-icon edit" (click)="abrirEditarProyecto(p)">Editar</button>
+            <button class="btn-icon del"  (click)="eliminarProyecto(p.id)">Eliminar</button>
           </td>
         </tr>
       </tbody>
     </table>
   </div>
-  <button class="btn-add" (click)="abrirAgregarProyecto()">+ Agregar proyecto</button>
+  <button class="btn-add" (click)="abrirAgregarProyecto()" *ngIf="editable">+ Agregar proyecto</button>
 </div>
 
 <!-- ══ 3.1.1 Indicadores ════════════════════════════════════ -->
@@ -42,15 +42,15 @@
           <td class="mono">{{ i.numProyecto }}</td>
           <td class="mono">{{ i.numIndicador }}</td>
           <td>{{ i.descripcion }}</td>
-          <td class="td-actions">
-            <button class="btn-icon edit" (click)="abrirEditarIndicador(i)">✏️</button>
-            <button class="btn-icon del"  (click)="eliminarIndicador(i.proyectoId, i.id)">✕</button>
+          <td class="td-actions" *ngIf="editable">
+            <button class="btn-icon edit" (click)="abrirEditarIndicador(i)">Editar</button>
+            <button class="btn-icon del"  (click)="eliminarIndicador(i.proyectoId, i.id)">Eliminar</button>
           </td>
         </tr>
       </tbody>
     </table>
   </div>
-  <button class="btn-add" (click)="abrirAgregarIndicador()" [disabled]="proyectos.length === 0">+ Agregar indicador</button>
+  <button class="btn-add" (click)="abrirAgregarIndicador()" [disabled]="proyectos.length === 0" *ngIf="editable">+ Agregar indicador</button>
 </div>
 
 <!-- ══ 3.2 Publicaciones ════════════════════════════════════ -->
@@ -67,15 +67,15 @@
           <td class="mono">{{ p.numPublicacion }}</td><td>{{ p.titulo }}</td><td>{{ p.revista }}</td>
           <td><span class="badge-fase" [ngClass]="'fase-' + p.fase">{{ p.fase === 'P' ? 'Publicado' : p.fase === 'A' ? 'Aceptado' : 'Revisión' }}</span></td>
           <td class="mono">{{ p.anio }}</td>
-          <td class="td-actions">
-            <button class="btn-icon edit" (click)="abrirEditarPublicacion(p)">✏️</button>
-            <button class="btn-icon del"  (click)="eliminarPublicacion(p.id)">✕</button>
+          <td class="td-actions" *ngIf="editable">
+            <button class="btn-icon edit" (click)="abrirEditarPublicacion(p)">Editar</button>
+            <button class="btn-icon del"  (click)="eliminarPublicacion(p.id)">Eliminar</button>
           </td>
         </tr>
       </tbody>
     </table>
   </div>
-  <button class="btn-add" (click)="abrirAgregarPublicacion()">+ Agregar publicación</button>
+  <button class="btn-add" (click)="abrirAgregarPublicacion()" *ngIf="editable">+ Agregar publicación</button>
 </div>
 
 <!-- ══ 3.3 Desarrollo ═══════════════════════════════════════ -->
@@ -92,15 +92,15 @@
           <td class="mono">{{ d.numActividad }}</td><td>{{ d.actividad }}</td>
           <td>{{ d.institucionSolicitante }}</td><td class="mono">{{ d.horasRequeridas }}</td>
           <td>{{ d.producto ?? '—' }}</td>
-          <td class="td-actions">
-            <button class="btn-icon edit" (click)="abrirEditarDesarrollo(d)">✏️</button>
-            <button class="btn-icon del"  (click)="eliminarDesarrollo(d.id)">✕</button>
+          <td class="td-actions" *ngIf="editable">
+            <button class="btn-icon edit" (click)="abrirEditarDesarrollo(d)">Editar</button>
+            <button class="btn-icon del"  (click)="eliminarDesarrollo(d.id)">Eliminar</button>
           </td>
         </tr>
       </tbody>
     </table>
   </div>
-  <button class="btn-add" (click)="abrirAgregarDesarrollo()">+ Agregar actividad</button>
+  <button class="btn-add" (click)="abrirAgregarDesarrollo()" *ngIf="editable">+ Agregar actividad</button>
 </div>
 
 <!-- ══ 3.4 Problemas y oportunidades ════════════════════════ -->
@@ -117,7 +117,7 @@
     </div>
   </div>
   <div class="textos-save-row">
-    <button class="btn-save-text" (click)="solicitarGuardarTextos.emit()">💾 Guardar oportunidades y problemas</button>
+    <button class="btn-save-text" (click)="solicitarGuardarTextos.emit()" *ngIf="editable">💾 Guardar oportunidades y problemas</button>
   </div>
 </div>
 

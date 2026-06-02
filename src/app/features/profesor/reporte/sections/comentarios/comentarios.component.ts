@@ -13,5 +13,6 @@ export class ComentariosComponent {
   @Input()  comentarios = '';
   @Output() comentariosChange    = new EventEmitter<string>();
   @Output() solicitarGuardar     = new EventEmitter<void>(); // ← nuevo
+  @Input() editable: boolean = true;
   colapsado = false;
 }

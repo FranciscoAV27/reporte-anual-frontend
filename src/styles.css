@@ -81,3 +81,22 @@ html, body {
   color: #666 !important;
   cursor: not-allowed;
 }
+
+.topbar-badge-img {
+  width: 42px;
+  height: 42px;
+  border-radius: 8px;
+  overflow: hidden;
+  flex-shrink: 0;
+  background: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--border);
+}
+
+.topbar-logo {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}

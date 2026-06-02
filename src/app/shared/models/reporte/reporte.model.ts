@@ -1,6 +1,8 @@
 // src/app/shared/models/reporte/reporte.model.ts
 
-export type EstadoReporte = 'BORRADOR' | 'PENDIENTE' | 'ACEPTADO' | 'RECHAZADO';
+//export type EstadoReporte = 'BORRADOR' | 'PENDIENTE' | 'ACEPTADO' | 'RECHAZADO';
+
+export type EstadoReporte = 'BORRADOR' | 'PENDIENTE_VALIDACION' | 'ACEPTADO' | 'RECHAZADO';
 
 export interface ReporteRequest {
   anio: number;
@@ -16,6 +18,7 @@ export interface ReporteResponse {
   profesorId: number;
   profesorNombre: string;
   profesorApellidos?: string;
+  profesorCarrera?: string;
   anio: number;
   estado: EstadoReporte;
   comentariosAdmin?: string;
@@ -28,6 +31,12 @@ export interface ReporteResponse {
   actualizadoEn: string;
   enviadoEn?: string;
   aprobadoEn?: string;
+
+  rechazadoPorNombre?:    string;
+  rechazadoPorApellidos?: string;
+  rechazadoEn?:           string;
+  aprobadoPorNombre?:     string;
+  aprobadoPorApellidos?:  string;
 
   // ── Secciones concluidas ──
   seccion1Concluida: boolean;

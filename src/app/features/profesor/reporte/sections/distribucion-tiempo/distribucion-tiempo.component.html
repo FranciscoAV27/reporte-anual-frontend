@@ -1,6 +1,5 @@
 <!-- distribucion-tiempo.component.html -->
 
-<!-- Cargando -->
 <div class="dist-loading" *ngIf="cargando">
   <div class="spinner-sm"></div>
   <span>Preparando tabla...</span>
@@ -8,47 +7,60 @@
 
 <ng-container *ngIf="!cargando && tablaForm">
 
-  <div class="subsec">
-    <div class="subsec-title">Horas promedio por semana dedicadas a cada actividad</div>
+  <p class="dist-hint">Horas promedio por semana dedicadas a cada actividad académica durante el periodo.</p>
 
-    <div class="table-wrap" [formGroup]="tablaForm">
-      <table class="data-table dist-table">
-        <thead>
-          <tr>
-            <th class="col-actividad">Actividad Académica</th>
-            <th class="col-horas">Ciclo (oct–feb)</th>
-            <th class="col-horas">Ciclo (mar–jul)</th>
-            <th class="col-horas">Verano (jul–sept)</th>
-          </tr>
-        </thead>
-        <tbody>
-          <ng-container *ngFor="let fila of filas">
-            <tr [formGroupName]="'fila_' + fila.id" class="dist-row">
-              <td class="actividad-cell">{{ fila.actividadAcademica }}</td>
-              <td><input class="ti ti-horas" type="number" min="0" step="0.5" formControlName="horasCicloOi"></td>
-              <td><input class="ti ti-horas" type="number" min="0" step="0.5" formControlName="horasCicloPv"></td>
-              <td><input class="ti ti-horas" type="number" min="0" step="0.5" formControlName="horasVerano"></td>
-            </tr>
-          </ng-container>
-          <tr class="dist-total-row">
-            <td class="actividad-cell"><strong>Suma</strong></td>
-            <td class="mono"><strong>{{ totalOi }}</strong></td>
-            <td class="mono"><strong>{{ totalPv }}</strong></td>
-            <td class="mono"><strong>{{ totalVerano }}</strong></td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
+  <div class="dist-error" *ngIf="hayExceso">
+    ⚠️ La suma de horas no puede exceder <strong>40 horas</strong> por periodo. Ajusta los valores antes de guardar.
   </div>
 
-  <!-- <div class="fecha-entrega">
-    <span class="field-label">Fecha de entrega:</span>
-    <span class="fecha-valor" *ngIf="reporte.enviadoEn">{{ fechaEnvio }}</span>
-    <span class="fecha-pendiente" *ngIf="!reporte.enviadoEn">Se asignará automáticamente al enviar el reporte</span>
-  </div> -->
+  <div class="dist-table-wrap" [formGroup]="tablaForm">
+    <table class="dist-table">
+      <thead>
+        <tr>
+          <th class="th-actividad">Actividad Académica</th>
+          <th class="th-horas">Ciclo Oct–Feb</th>
+          <th class="th-horas">Ciclo Mar–Jul</th>
+          <th class="th-horas">Verano Jul–Sep</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let fila of filas; let i = index"
+          [formGroupName]="'fila_' + fila.id"
+          [class.fila-par]="i % 2 === 0">
+          <td class="td-actividad">{{ fila.actividadAcademica }}</td>
+          <td class="td-horas">
+            <input class="hi" type="number" min="0" step="0.5"
+              formControlName="horasCicloOi" [disabled]="!editable">
+          </td>
+          <td class="td-horas">
+            <input class="hi" type="number" min="0" step="0.5"
+              formControlName="horasCicloPv" [disabled]="!editable">
+          </td>
+          <td class="td-horas">
+            <input class="hi" type="number" min="0" step="0.5"
+              formControlName="horasVerano" [disabled]="!editable">
+          </td>
+        </tr>
+      </tbody>
+      <tfoot>
+        <tr class="fila-total">
+          <td class="td-total-label">Total</td>
+          <td class="td-total-num" [class.excede]="totalOiExcede">{{ totalOi }}</td>
+          <td class="td-total-num" [class.excede]="totalPvExcede">{{ totalPv }}</td>
+          <td class="td-total-num" [class.excede]="totalVeranoExcede">{{ totalVerano }}</td>
+        </tr>
+      </tfoot>
+    </table>
+  </div>
 
-  <div class="dist-actions">
-    <button class="btn-save-text" (click)="guardar()" [disabled]="guardando">
+  <div class="dist-actions" *ngIf="editable">
+    <div class="dist-warn-inline" *ngIf="hayExceso">
+      Corrige los valores para poder guardar
+    </div>
+    <button class="btn-save-text"
+      (click)="guardar()"
+      [disabled]="guardando || hayExceso"
+      [class.btn-disabled]="hayExceso">
       {{ guardando ? 'Guardando...' : '💾 Guardar distribución' }}
     </button>
   </div>

@@ -15,15 +15,15 @@
           <td>{{ t.carrera }}</td>
           <td class="mono">{{ t.semestre }}</td>
           <td class="mono">{{ t.fechaRegistro }}</td>
-          <td class="td-actions">
-            <button class="btn-icon edit" (click)="abrirEditarTutoria(t)">✏️</button>
-            <button class="btn-icon del"  (click)="eliminarTutoria(t.id)">✕</button>
+          <td class="td-actions" *ngIf="editable">
+            <button class="btn-icon edit" (click)="abrirEditarTutoria(t)">Editar</button>
+            <button class="btn-icon del"  (click)="eliminarTutoria(t.id)">Eliminar</button>
           </td>
         </tr>
       </tbody>
     </table>
   </div>
-  <button class="btn-add" (click)="abrirAgregarTutoria()">+ Agregar tutoría</button>
+  <button class="btn-add" (click)="abrirAgregarTutoria()" *ngIf="editable">+ Agregar tutoría</button>
 </div>
 
 <!-- ══ 2.2 Dirección de tesis ════════════════════════════════ -->
@@ -44,15 +44,15 @@
           <td class="mono">{{ t.fechaRegistro   ?? '—' }}</td>
           <td class="mono">{{ t.fechaProgTerm   ?? '—' }}</td>
           <td class="mono">{{ t.fechaReprogTerm ?? '—' }}</td>
-          <td class="td-actions">
-            <button class="btn-icon edit" (click)="abrirEditarTesis(t)">✏️</button>
-            <button class="btn-icon del"  (click)="eliminarTesis(t.id)">✕</button>
+          <td class="td-actions" *ngIf="editable">
+            <button class="btn-icon edit" (click)="abrirEditarTesis(t)">Editar</button>
+            <button class="btn-icon del"  (click)="eliminarTesis(t.id)">Eliminar</button>
           </td>
         </tr>
       </tbody>
     </table>
   </div>
-  <button class="btn-add" (click)="abrirAgregarTesis()">+ Agregar tesis</button>
+  <button class="btn-add" (click)="abrirAgregarTesis()" *ngIf="editable">+ Agregar tesis</button>
 </div>
 
 <!-- ══ MODAL ══════════════════════════════════════════════════ -->

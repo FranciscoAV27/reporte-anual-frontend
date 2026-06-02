@@ -14,15 +14,15 @@
           <td>{{ a.comisionOPuesto }}</td>
           <td class="mono">{{ a.periodoInicio ?? '—' }}</td>
           <td class="mono">{{ a.periodoFin    ?? '—' }}</td>
-          <td class="td-actions">
-            <button class="btn-icon edit" (click)="abrirEditar(a)">✏️</button>
-            <button class="btn-icon del"  (click)="eliminar(a.id)">✕</button>
+          <td class="td-actions" *ngIf="editable">
+            <button class="btn-icon edit" (click)="abrirEditar(a)">Editar</button>
+            <button class="btn-icon del"  (click)="eliminar(a.id)">Eliminar</button>
           </td>
         </tr>
       </tbody>
     </table>
   </div>
-  <button class="btn-add" (click)="abrir()">+ Agregar actividad</button>
+  <button class="btn-add" (click)="abrir()" *ngIf="editable">+ Agregar actividad</button>
 </div>
 
 <!-- <app-modal [visible]="modalVisible" [titulo]="modalTitulo" [guardando]="modalGuardando" (cerrar)="cerrarModal()" (guardar)="guardarModal()">

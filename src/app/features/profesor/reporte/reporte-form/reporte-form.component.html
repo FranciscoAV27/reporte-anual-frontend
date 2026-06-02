@@ -5,7 +5,10 @@
   <!-- ══ TOPBAR ══════════════════════════════════════════════ -->
   <header class="topbar">
     <div class="topbar-brand">
-      <div class="topbar-badge">UNPA</div>
+      <!-- <div class="topbar-badge">UNPA</div> -->
+      <div class="topbar-badge-img">
+        <img src="images/unpa2.jpg" alt="UNPA" class="topbar-logo">
+      </div>
       <div class="topbar-title">Reporte Anual<small>Actividades Docentes</small></div>
     </div>
     <div class="topbar-divider"></div>
@@ -32,21 +35,68 @@
   <!-- ══ VISTA: HOME ══════════════════════════════════════════ -->
   <main class="main-content" *ngIf="vistaActiva === 'home'">
     <div class="subview">
+
       <div class="page-header">
         <h1>Panel principal</h1>
-        <p>Bienvenido al sistema de Reporte Anual de Actividades Docentes</p>
+        <p>Bienvenido, {{ reporte?.profesorNombre }} {{ reporte?.profesorApellidos }}</p>
       </div>
-      <div class="periodo-banner periodo-sin-datos">
+
+      <!-- <div class="periodo-banner periodo-activo" *ngIf="periodoActivo?.estado === 'ACTIVO'">
         <div class="periodo-info">
-          <strong>📅 Periodo de entrega</strong>
-          <span>La secretaría aún no ha configurado el periodo de entrega activo</span>
+          <strong>📅 Periodo de entrega activo</strong>
+          <span>
+            Fecha límite: {{ periodoActivo!.fechaLimite | date:"d 'de' MMMM 'de' yyyy":'':'es-MX' }}
+            · Inicia tu reporte o continúa donde lo dejaste
+          </span>
+        </div>
+      </div> -->
+
+      <!-- <div class="periodo-banner periodo-activo" *ngIf="periodoActivo?.estado === 'ACTIVO'">
+        <div class="periodo-info">
+          <strong>📅 Periodo de entrega activo</strong>
+          <span>Fecha límite: {{ formatFecha(periodoActivo!.fechaLimite) }} · Inicia tu reporte o continúa donde lo dejaste</span>
+        </div>
+      </div> -->
+
+      <div class="periodo-banner periodo-activo" *ngIf="periodoActivo?.estado === 'ACTIVO'">
+        <div class="periodo-info">
+          <strong>📅 Periodo de entrega activo</strong>
+          <span>Fecha límite: {{ formatFecha(periodoActivo!.fechaLimite) }} · Inicia tu reporte o continúa donde lo dejaste</span>
+        </div>
+        <button class="btn-aviso-detalle" (click)="abrirModalPeriodo()">
+          Ver detalles
+        </button>
+      </div>
+
+      <!-- Banner periodo cerrado -->
+      <div class="periodo-banner periodo-cerrado" *ngIf="periodoActivo?.estado === 'CERRADO'">
+        <div class="periodo-info">
+          <strong>🔒 Periodo de entrega cerrado</strong>
+          <span>No puedes enviar tu reporte por el momento.</span>
         </div>
       </div>
+
+      <!-- Banner sin periodo -->
+      <div class="periodo-banner periodo-sin-datos" *ngIf="!periodoActivo">
+        <div class="periodo-info">
+          <strong>📅 Periodo de entrega</strong>
+          <span>La secretaría aún no ha configurado el periodo de entrega activo.</span>
+        </div>
+      </div>
+
+      <!-- Stats -->
       <div class="stats-row">
         <div class="stat-card accent">
           <div class="stat-label">Estado de tu reporte</div>
-          <div class="stat-value-badge"><span class="badge" [ngClass]="estadoBadgeClass">{{ estadoLabel }}</span></div>
-          <div class="stat-meta">Última edición: {{ ultimaEdicion }}</div>
+          <div class="stat-value-badge">
+            <span class="badge" [ngClass]="estadoBadgeClass">{{ estadoLabel }}</span>
+          </div>
+          <div class="stat-meta" *ngIf="!esPrimerAcceso">
+            Última edición: {{ ultimaEdicion }}
+          </div>
+          <div class="stat-meta" *ngIf="esPrimerAcceso">
+            Aún no has iniciado tu reporte
+          </div>
         </div>
         <div class="stat-card">
           <div class="stat-label">Año del reporte</div>
@@ -62,15 +112,47 @@
           <div class="stat-meta">{{ seccionesConcluidas }} de 7 secciones concluidas</div>
         </div>
       </div>
+
+      <!-- Avisos -->
       <div class="section-card">
         <div class="section-card-header" style="cursor:default;pointer-events:none">
           <div class="section-number">!</div>
           <h3>Avisos</h3>
         </div>
         <div class="section-card-body">
-          <div class="alert alert-info">📢 No hay avisos activos en este momento.</div>
+
+          <!-- Sin avisos -->
+          <div class="alert alert-info"
+            *ngIf="reporte?.estado !== 'RECHAZADO' && reporte?.estado !== 'ACEPTADO'">
+            📢 No hay avisos activos en este momento.
+          </div>
+
+          <!-- Aviso: reporte rechazado -->
+          <div class="aviso-item aviso-rechazo" *ngIf="reporte?.estado === 'RECHAZADO'">
+            <div class="aviso-item-header">
+              <div class="aviso-item-titulo">
+                <span class="aviso-dot dot-error"></span>
+                <strong>Tu reporte requiere correcciones</strong>
+              </div>
+              <div class="aviso-item-actions">
+                <button class="btn-aviso-detalle" (click)="abrirModalRechazo()">
+                  Ver detalles
+                </button>
+                <button class="btn-ir-reporte" (click)="setVista('form')">
+                  Ir a mi reporte →
+                </button>
+              </div>
+            </div>
+            <p class="aviso-item-desc">
+              La secretaría ha revisado tu reporte y solicita correcciones. Revisa los detalles y realiza los cambios necesarios.
+            </p>
+          </div>
+
         </div>
       </div>
+
+      
+
     </div>
   </main>
 
@@ -99,7 +181,7 @@
             <span *ngIf="esConcluida(s.numero)">✓</span>
           </div>
           <span class="sb-item-label">{{ s.label }}</span>
-          <span class="sb-check" *ngIf="esConcluida(s.numero)">✓</span>
+          <!-- <span class="sb-check" *ngIf="esConcluida(s.numero)">✓</span> -->
         </button>
       </nav>
 
@@ -146,11 +228,13 @@
               *ngIf="reporte"
               [reporteId]="reporte.id"
               [anioReporte]="reporte.anio"
+              [editable]="formularioEditable"
               [problemasDocencia]="textosForm.get('problemasDocencia')!.value"
               [oportunidadesDocencia]="textosForm.get('oportunidadesDocencia')!.value"
               (problemasChange)="textosForm.get('problemasDocencia')!.setValue($event)"
               (oportunidadesChange)="textosForm.get('oportunidadesDocencia')!.setValue($event)"
               (registroAgregado)="onRegistroAgregado(1)"
+              (registroModificado)="onRegistroModificado()"
               (solicitarGuardarTextos)="guardarTextoSeccion()"
               (notificacion)="mostrarNotificacion($event)">
             </app-docencia>
@@ -161,7 +245,9 @@
             <app-formacion-rh
               *ngIf="reporte"
               [reporteId]="reporte.id"
+              [editable]="formularioEditable"
               (registroAgregado)="onRegistroAgregado(2)"
+              (registroModificado)="onRegistroModificado()"
               (notificacion)="mostrarNotificacion($event)">
             </app-formacion-rh>
           </ng-container>
@@ -171,11 +257,13 @@
             <app-investigacion
               *ngIf="reporte"
               [reporteId]="reporte.id"
+              [editable]="formularioEditable"
               [problemasInvestigacion]="textosForm.get('problemasInvestigacion')!.value"
               [oportunidadesInvestigacion]="textosForm.get('oportunidadesInvestigacion')!.value"
               (problemasChange)="textosForm.get('problemasInvestigacion')!.setValue($event)"
               (oportunidadesChange)="textosForm.get('oportunidadesInvestigacion')!.setValue($event)"
               (registroAgregado)="onRegistroAgregado(3)"
+              (registroModificado)="onRegistroModificado()"
               (solicitarGuardarTextos)="guardarTextoSeccion()"
               (notificacion)="mostrarNotificacion($event)">
             </app-investigacion>
@@ -186,7 +274,9 @@
             <app-gestion-academica
               *ngIf="reporte"
               [reporteId]="reporte.id"
+              [editable]="formularioEditable"
               (registroAgregado)="onRegistroAgregado(4)"
+              (registroModificado)="onRegistroModificado()"
               (notificacion)="mostrarNotificacion($event)">
             </app-gestion-academica>
           </ng-container>
@@ -196,7 +286,9 @@
             <app-difusion
               *ngIf="reporte"
               [reporteId]="reporte.id"
+              [editable]="formularioEditable"
               (registroAgregado)="onRegistroAgregado(5)"
+              (registroModificado)="onRegistroModificado()"
               (notificacion)="mostrarNotificacion($event)">
             </app-difusion>
           </ng-container>
@@ -205,6 +297,7 @@
           <ng-container *ngSwitchCase="5">
             <app-comentarios
               *ngIf="reporte"
+              [editable]="formularioEditable"
               [comentarios]="textosForm.get('comentariosGenerales')!.value"
               (comentariosChange)="textosForm.get('comentariosGenerales')!.setValue($event)"
               (solicitarGuardar)="guardarTextoSeccion()">
@@ -216,7 +309,9 @@
             <app-distribucion-tiempo
               *ngIf="reporte"
               [reporteId]="reporte.id"
-              [reporte]="reporte">
+              [editable]="formularioEditable"
+              [reporte]="reporte"
+              (registroModificado)="onRegistroModificado()">
             </app-distribucion-tiempo>
           </ng-container>
 
@@ -303,6 +398,79 @@
   </div>
 </div>
 
+<!-- Modal: detalles de rechazo -->
+<div class="modal-overlay" [class.show]="modalRechazoVisible">
+  <div class="modal">
+    <div class="modal-header">
+      <h3>Detalles del rechazo</h3>
+      <button class="modal-close" (click)="cerrarModalRechazo()">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="detalle-row">
+        <span class="detalle-label">Revisado por</span>
+        <span class="detalle-valor">
+          {{ reporte?.rechazadoPorNombre }} {{ reporte?.rechazadoPorApellidos ?? '' }}
+        </span>
+      </div>
+      <div class="detalle-row">
+        <span class="detalle-label">Fecha de rechazo</span>
+        <span class="detalle-valor">{{ formatFecha(reporte?.rechazadoEn) }}</span>
+      </div>
+      <div class="detalle-row detalle-motivo">
+        <span class="detalle-label">Motivo / correcciones requeridas</span>
+        <p class="detalle-texto">{{ reporte?.comentariosAdmin ?? 'Sin motivo especificado.' }}</p>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" (click)="cerrarModalRechazo()">Cerrar</button>
+      <button class="btn btn-gold" (click)="cerrarModalRechazo(); setVista('form')">
+        Ir a mi reporte →
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: detalles del periodo -->
+<div class="modal-overlay" [class.show]="modalPeriodoVisible">
+  <div class="modal">
+    <div class="modal-header">
+      <h3>Detalles del periodo de entrega</h3>
+      <button class="modal-close" (click)="cerrarModalPeriodo()">✕</button>
+    </div>
+    <div class="modal-body" *ngIf="periodoActivo">
+      <div class="detalle-row">
+        <span class="detalle-label">Periodo</span>
+        <span class="detalle-valor">{{ periodoActivo.nombre }}</span>
+      </div>
+      <div class="detalle-row">
+        <span class="detalle-label">Iniciado por</span>
+        <span class="detalle-valor">
+          {{ periodoActivo.creadoPorNombre }} {{ periodoActivo.creadoPorApellidos ?? '' }}
+        </span>
+      </div>
+      <div class="detalle-row">
+        <span class="detalle-label">Fecha de apertura</span>
+        <span class="detalle-valor">{{ formatFecha(periodoActivo.fechaApertura) }}</span>
+      </div>
+      <div class="detalle-row">
+        <span class="detalle-label">Fecha límite de entrega</span>
+        <span class="detalle-valor">{{ formatFecha(periodoActivo.fechaLimite) }}</span>
+      </div>
+      <div class="detalle-row detalle-motivo" *ngIf="periodoActivo.instrucciones">
+        <span class="detalle-label">Instrucciones adicionales</span>
+        <p class="detalle-texto">{{ periodoActivo.instrucciones }}</p>
+      </div>
+      <div class="detalle-row" *ngIf="!periodoActivo.instrucciones">
+        <span class="detalle-label">Instrucciones adicionales</span>
+        <span class="detalle-valor" style="color:var(--ink-soft)">Sin instrucciones adicionales.</span>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" (click)="cerrarModalPeriodo()">Cerrar</button>
+    </div>
+  </div>
+</div>
+
 <!-- Toast -->
 <div class="toast" [class.show]="toastMsg"
   [class.success]="toastTipo === 'success'"
@@ -311,21 +479,3 @@
   {{ toastMsg }}
 </div>
 
-<!-- Plantilla PDF oculta -->
-<!-- <div style="position:absolute;left:-9999px;top:0;z-index:-1;" *ngIf="datosPdf && reporte">
-  <app-reporte-pdf
-    [reporte]="reporte"
-    [cursos]="datosPdf.cursos"
-    [productos]="datosPdf.productos"
-    [asignaturas]="datosPdf.asignaturas"
-    [tutorias]="datosPdf.tutorias"
-    [tesis]="datosPdf.tesis"
-    [proyectos]="datosPdf.proyectos"
-    [indicadores]="datosPdf.indicadores"
-    [publicaciones]="datosPdf.publicaciones"
-    [desarrollo]="datosPdf.desarrollo"
-    [gestion]="datosPdf.gestion"
-    [difusion]="datosPdf.difusion"
-    [distribucion]="datosPdf.distribucion">
-  </app-reporte-pdf>
-</div> -->

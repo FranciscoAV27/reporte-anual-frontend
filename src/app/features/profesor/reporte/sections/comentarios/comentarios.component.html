@@ -11,7 +11,7 @@
       rows="7">
     </textarea>
   </div>
-  <div class="textos-save-row">
+  <div class="textos-save-row" *ngIf="editable">
     <button class="btn-save-text" (click)="solicitarGuardar.emit()">
       💾 Guardar comentarios generales
     </button>

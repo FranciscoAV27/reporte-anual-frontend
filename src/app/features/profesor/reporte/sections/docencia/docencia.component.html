@@ -18,15 +18,15 @@
           <td class="mono">{{ c.cicloEscolar }}</td>
           <td class="mono">{{ c.horasSemana }}</td>
           <td class="mono">{{ c.numAlumnos }}</td>
-          <td class="td-actions">
-            <button class="btn-icon edit" (click)="abrirEditarCurso(c)" title="Editar">✏️</button>
-            <button class="btn-icon del"  (click)="eliminarCurso(c.id)" title="Eliminar">✕</button>
+          <td class="td-actions" *ngIf="editable">
+            <button class="btn-icon edit" (click)="abrirEditarCurso(c)" title="Editar">Editar</button>
+            <button class="btn-icon del"  (click)="eliminarCurso(c.id)" title="Eliminar">Eliminar</button>
           </td>
         </tr>
       </tbody>
     </table>
   </div>
-  <button class="btn-add" (click)="abrirAgregarCurso()">+ Agregar curso</button>
+  <button class="btn-add" (click)="abrirAgregarCurso()" *ngIf="editable">+ Agregar curso</button>
 </div>
 
 <!-- ══ 1.2 Productos de apoyo ══════════════════════════════════ -->
@@ -46,15 +46,15 @@
             <a *ngIf="p.enlace" [href]="p.enlace" target="_blank" class="td-link">{{ p.enlace }}</a>
             <span *ngIf="!p.enlace" class="empty-cell">—</span>
           </td>
-          <td class="td-actions">
-            <button class="btn-icon edit" (click)="abrirEditarProducto(p)">✏️</button>
-            <button class="btn-icon del"  (click)="eliminarProducto(p.id)">✕</button>
+          <td class="td-actions" *ngIf="editable">
+            <button class="btn-icon edit" (click)="abrirEditarProducto(p)">Editar</button>
+            <button class="btn-icon del"  (click)="eliminarProducto(p.id)">Eliminar</button>
           </td>
         </tr>
       </tbody>
     </table>
   </div>
-  <button class="btn-add" (click)="abrirAgregarProducto()">+ Agregar producto</button>
+  <button class="btn-add" (click)="abrirAgregarProducto()" *ngIf="editable">+ Agregar producto</button>
 </div>
 
 <!-- ══ 1.3 Asignaturas de afinidad ════════════════════════════ -->
@@ -72,15 +72,15 @@
           <td>{{ a.carrera }}</td>
           <td>{{ a.asignatura }}</td>
           <td class="mono">{{ a.semestre }}</td>
-          <td class="td-actions">
-            <button class="btn-icon edit" (click)="abrirEditarAsignatura(a)">✏️</button>
-            <button class="btn-icon del"  (click)="eliminarAsignatura(a.id)">✕</button>
+          <td class="td-actions" *ngIf="editable">
+            <button class="btn-icon edit" (click)="abrirEditarAsignatura(a)">Editar</button>
+            <button class="btn-icon del"  (click)="eliminarAsignatura(a.id)">Eliminar</button>
           </td>
         </tr>
       </tbody>
     </table>
   </div>
-  <button class="btn-add" (click)="abrirAgregarAsignatura()">+ Agregar asignatura</button>
+  <button class="btn-add" (click)="abrirAgregarAsignatura()" *ngIf="editable">+ Agregar asignatura</button>
 </div>
 
 <!-- ══ 1.4 Problemas y oportunidades ════════════════════════ -->
@@ -96,7 +96,7 @@
       <textarea class="field-textarea" placeholder="Alternativas para minimizar dificultades..." [value]="problemasDocencia" (input)="problemasChange.emit($any($event.target).value)" rows="4"></textarea>
     </div>
   </div>
-  <div class="textos-save-row">
+  <div class="textos-save-row" *ngIf="editable">
     <button class="btn-save-text" (click)="solicitarGuardarTextos.emit()">💾 Guardar oportunidades y problemas</button>
   </div>
 </div>

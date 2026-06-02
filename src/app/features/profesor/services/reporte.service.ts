@@ -36,4 +36,8 @@ export class ReporteService {
       `${this.base}/${id}/seccion/${numSeccion}/concluir`, {}
     );
   }
+
+  touch(id: number): Observable<void> {
+    return this.http.patch<void>(`${this.base}/${id}/touch`, {});
+  }
 }

@@ -1,5 +1,5 @@
 // src/app/features/profesor/reporte-form/reporte-form.component.ts
-import { Component, OnInit, inject, ChangeDetectorRef, NgZone } from '@angular/core';
+import { Component, OnInit, OnDestroy, inject, ChangeDetectorRef, NgZone } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup } from '@angular/forms';
 import { ReporteService } from '../../services/reporte.service';
@@ -32,6 +32,8 @@ import { GestionDifusionService } from '../../services/gestion-difusion.service'
 import { DistribucionTiempoService } from '../../services/distribucion-tiempo.service';
 import { forkJoin } from 'rxjs';
 import { switchMap } from 'rxjs/operators';
+import { PeriodoService } from '../../../../core/services/periodo.service';
+import { PeriodoResponse } from '../../../../shared/models/periodo.model';
 //import { ReportePdfComponent } from '../../pdf/reporte-pdf.component';
 
 
@@ -49,7 +51,7 @@ type Vista = 'home' | 'form' | 'historial';
   templateUrl: './reporte-form.component.html',
   styleUrls: ['./reporte-form.component.css']
 })
-export class ReporteFormComponent implements OnInit {
+export class ReporteFormComponent implements OnInit, OnDestroy {
   private readonly reporteService = inject(ReporteService);
   private readonly authService    = inject(AuthService);
   private readonly fb             = inject(FormBuilder);
@@ -63,6 +65,9 @@ export class ReporteFormComponent implements OnInit {
   private readonly investigacionService= inject(InvestigacionService);
   private readonly gestionDifService   = inject(GestionDifusionService);
   private readonly distribucionService = inject(DistribucionTiempoService);
+  private readonly periodoService = inject(PeriodoService);
+
+  private refreshInterval: any;
 
   reporte: ReporteResponse | null = null;
   cargando  = true;
@@ -79,6 +84,8 @@ export class ReporteFormComponent implements OnInit {
   // datosPdf: any = null;
   generandoPdf = false;
 
+  periodoActivo: PeriodoResponse | null = null;
+
   readonly secciones   = SECCIONES;
   readonly anioActual  = new Date().getFullYear();
 
@@ -89,6 +96,9 @@ export class ReporteFormComponent implements OnInit {
     oportunidadesInvestigacion: [''],
     comentariosGenerales:       [''],
   });
+
+  modalRechazoVisible = false;
+  modalPeriodoVisible = false;
 
   // ── Init ──────────────────────────────────────────────────
   ngOnInit(): void {
@@ -115,6 +125,50 @@ export class ReporteFormComponent implements OnInit {
         this.ngZone.run(() => { this.errorMsg = `Error al cargar reportes. (${err.status})`; this.cargando = false; this.cdr.detectChanges(); });
       }
     });
+
+    // this.periodoService.obtenerActivo().subscribe({
+    //   next: (p) => { this.ngZone.run(() => { this.periodoActivo = p; this.cdr.detectChanges(); }); },
+    //   error: () => { this.periodoActivo = null; }
+    // });
+
+    this.periodoService.obtenerActivo().subscribe({
+      next: (p) => {
+        console.log('Periodo recibido:', p); // ← temporal
+        this.ngZone.run(() => { this.periodoActivo = p; this.cdr.detectChanges(); });
+      },
+      error: (err) => {
+        console.log('Error periodo:', err); // ← temporal
+        this.periodoActivo = null;
+      }
+    });
+
+    this.refreshInterval = setInterval(() => {
+      if (!this.reporte) return;
+      this.reporteService.obtenerMisReportes().subscribe({
+        next: (reportes) => {
+          const actualizado = reportes.find(r => r.id === this.reporte!.id);
+          if (actualizado && actualizado.estado !== this.reporte!.estado) {
+            this.ngZone.run(() => {
+              this.reporte = { ...actualizado };
+              this.poblarTextos(actualizado);
+              this.cdr.detectChanges();
+            });
+          }
+        }
+      });
+    }, 60000);
+  }
+
+  ngOnDestroy(): void {
+    if (this.refreshInterval) clearInterval(this.refreshInterval);
+  }
+
+  formatFecha(fecha: string | null | undefined): string {
+    if (!fecha) return '—';
+    const [anio, mes, dia] = fecha.split('-');
+    const meses = ['enero','febrero','marzo','abril','mayo','junio',
+                  'julio','agosto','septiembre','octubre','noviembre','diciembre'];
+    return `${parseInt(dia)} de ${meses[parseInt(mes) - 1]} de ${anio}`;
   }
 
   private poblarTextos(r: ReporteResponse): void {
@@ -203,6 +257,22 @@ export class ReporteFormComponent implements OnInit {
     }
   }
 
+  onRegistroModificado(): void {
+    if (!this.reporte) return;
+    this.reporteService.touch(this.reporte.id).subscribe({
+      next: () => {
+        // Actualiza actualizadoEn localmente sin llamar al backend de nuevo
+        this.ngZone.run(() => {
+          this.reporte = {
+            ...this.reporte!,
+            actualizadoEn: new Date().toISOString()
+          };
+          this.cdr.detectChanges();
+        });
+      }
+    });
+  }
+
   // ── Guardar textos (secciones 1, 3, 6) ────────────────────
   guardarTextoSeccion(): void {
     if (!this.reporte) return;
@@ -261,20 +331,42 @@ export class ReporteFormComponent implements OnInit {
       ?.split(' ').slice(0, 2).map(n => n[0]).join('').toUpperCase() ?? 'P';
   }
 
+  // get estadoBadgeClass(): string {
+  //   const map: Record<string, string> = {
+  //     BORRADOR: 'badge-borrador', PENDIENTE_VALIDACION: 'badge-pendiente',
+  //     ACEPTADO: 'badge-aceptado', RECHAZADO: 'badge-rechazado',
+  //   };
+  //   return map[this.reporte?.estado ?? ''] ?? 'badge-borrador';
+  // }
+
   get estadoBadgeClass(): string {
-    const map: Record<string, string> = {
-      BORRADOR: 'badge-borrador', PENDIENTE_VALIDACION: 'badge-pendiente',
-      ACEPTADO: 'badge-aceptado', RECHAZADO: 'badge-rechazado',
+    if (this.reporte?.estado === 'BORRADOR' && this.esPrimerAcceso) return 'badge-no-iniciado';
+    const m: Record<string, string> = {
+      BORRADOR:             'badge-borrador',
+      PENDIENTE_VALIDACION: 'badge-pendiente',
+      ACEPTADO:             'badge-aceptado',
+      RECHAZADO:            'badge-rechazado',
     };
-    return map[this.reporte?.estado ?? ''] ?? 'badge-borrador';
+    return m[this.reporte?.estado ?? ''] ?? 'badge-no-iniciado';
   }
 
+  // get estadoLabel(): string {
+  //   const map: Record<string, string> = {
+  //     BORRADOR: 'Borrador', PENDIENTE_VALIDACION: 'Pendiente de validación',
+  //     ACEPTADO: 'Aceptado', RECHAZADO: 'Rechazado',
+  //   };
+  //   return map[this.reporte?.estado ?? ''] ?? 'Borrador';
+  // }
+
   get estadoLabel(): string {
-    const map: Record<string, string> = {
-      BORRADOR: 'Borrador', PENDIENTE_VALIDACION: 'Pendiente de validación',
-      ACEPTADO: 'Aceptado', RECHAZADO: 'Rechazado',
+    if (this.reporte?.estado === 'BORRADOR' && this.esPrimerAcceso) return 'No iniciado';
+    const m: Record<string, string> = {
+      BORRADOR:             'Borrador',
+      PENDIENTE_VALIDACION: 'Pendiente de validación',
+      ACEPTADO:             'Aceptado',
+      RECHAZADO:            'Rechazado',
     };
-    return map[this.reporte?.estado ?? ''] ?? 'Borrador';
+    return m[this.reporte?.estado ?? ''] ?? 'No iniciado';
   }
 
   get ultimaEdicion(): string {
@@ -378,5 +470,48 @@ export class ReporteFormComponent implements OnInit {
         this.mostrarToast('Error al generar el PDF', 'error');
       }
     });
+  }
+
+  get estadoCardClass(): string {
+    const m: Record<string, string> = {
+      BORRADOR:             'estado-borrador',
+      PENDIENTE_VALIDACION: 'estado-pendiente',
+      ACEPTADO:             'estado-aceptado',
+      RECHAZADO:            'estado-rechazado'
+    };
+    return m[this.reporte?.estado ?? ''] ?? 'estado-borrador';
+  }
+
+  get esPrimerAcceso(): boolean {
+    if (!this.reporte?.creadoEn || !this.reporte?.actualizadoEn) return true;
+    const creado      = new Date(this.reporte.creadoEn).getTime();
+    const actualizado = new Date(this.reporte.actualizadoEn).getTime();
+    return Math.abs(actualizado - creado) < 60000;
+  }
+
+  abrirModalRechazo(): void {
+    this.modalRechazoVisible = true;
+    this.cdr.detectChanges();
+  }
+
+  cerrarModalRechazo(): void {
+    this.modalRechazoVisible = false;
+    this.cdr.detectChanges();
+  }
+
+  abrirModalPeriodo(): void {
+    this.modalPeriodoVisible = true;
+    this.cdr.detectChanges();
+  }
+
+  cerrarModalPeriodo(): void {
+    this.modalPeriodoVisible = false;
+    this.cdr.detectChanges();
+  }
+
+  irAReporteDesdeAviso(): void {
+    this.modalRechazoVisible = false;
+    this.setVista('form');
+    this.cdr.detectChanges();
   }
 }
