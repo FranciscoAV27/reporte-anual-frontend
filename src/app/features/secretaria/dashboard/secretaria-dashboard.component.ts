@@ -10,6 +10,15 @@ import { ReporteResponse } from '../../../shared/models/reporte/reporte.model';
 import { calcularAnioCiclo, nombreCiclo } from '../../../core/utils/ciclo.util';
 import { FormsModule } from '@angular/forms';
 
+import { PdfService, DatosPdf } from '../../../core/services/pdf.service';
+import { DocenciaService } from '../../profesor/services/docencia.service';
+import { FormacionRhService } from '../../profesor/services/formacion-rh.service';
+import { InvestigacionService } from '../../profesor/services/investigacion.service';
+import { GestionDifusionService } from '../../profesor/services/gestion-difusion.service';
+import { DistribucionTiempoService } from '../../profesor/services/distribucion-tiempo.service';
+import { forkJoin } from 'rxjs';
+import { switchMap } from 'rxjs/operators';
+
 type Vista = 'inicio' | 'revision' | 'entregas' | 'historial';
 
 @Component({
@@ -26,6 +35,13 @@ export class SecretariaDashboardComponent implements OnInit {
   private readonly fb                = inject(FormBuilder);
   private readonly cdr               = inject(ChangeDetectorRef);
   private readonly ngZone            = inject(NgZone);
+
+  private readonly pdfService           = inject(PdfService);
+  private readonly docenciaService      = inject(DocenciaService);
+  private readonly formacionRhService   = inject(FormacionRhService);
+  private readonly investigacionService = inject(InvestigacionService);
+  private readonly gestionDifService    = inject(GestionDifusionService);
+  private readonly distribucionService  = inject(DistribucionTiempoService);
 
   // ── Estado general ─────────────────────────────────────────
   vistaActiva: Vista = 'inicio';
@@ -44,8 +60,13 @@ export class SecretariaDashboardComponent implements OnInit {
   modoModalPeriodo: 'iniciar' | 'editar' = 'iniciar';
   guardandoPeriodo = false;
 
+  // formPeriodo: FormGroup = this.fb.group({
+  //   fechaApertura: ['', Validators.required],
+  //   fechaLimite:   ['', Validators.required],
+  //   instrucciones: ['']
+  // });
+
   formPeriodo: FormGroup = this.fb.group({
-    fechaApertura: ['', Validators.required],
     fechaLimite:   ['', Validators.required],
     instrucciones: ['']
   });
@@ -75,6 +96,9 @@ export class SecretariaDashboardComponent implements OnInit {
 
   stats = { totalProfesores: 0, aceptados: 0, enRevision: 0, enCorreccion: 0, sinEntregar: 0 };
 
+  // Estado:
+  // generandoPdf = false;
+  generandoPdfId: number | null = null;
 
   // ── Computed ───────────────────────────────────────────────
   // get pendientesFiltrados(): ReporteResponse[] {
@@ -240,11 +264,22 @@ export class SecretariaDashboardComponent implements OnInit {
     this.cdr.detectChanges();
   }
 
+  // abrirModalEditar(): void {
+  //   if (!this.periodoActivo) return;
+  //   this.modoModalPeriodo = 'editar';
+  //   this.formPeriodo.patchValue({
+  //     fechaApertura: this.periodoActivo.fechaApertura,
+  //     fechaLimite:   this.periodoActivo.fechaLimite,
+  //     instrucciones: this.periodoActivo.instrucciones ?? ''
+  //   });
+  //   this.modalPeriodoVisible = true;
+  //   this.cdr.detectChanges();
+  // }
+
   abrirModalEditar(): void {
     if (!this.periodoActivo) return;
     this.modoModalPeriodo = 'editar';
     this.formPeriodo.patchValue({
-      fechaApertura: this.periodoActivo.fechaApertura,
       fechaLimite:   this.periodoActivo.fechaLimite,
       instrucciones: this.periodoActivo.instrucciones ?? ''
     });
@@ -258,11 +293,51 @@ export class SecretariaDashboardComponent implements OnInit {
     this.cdr.detectChanges();
   }
 
+  // guardarPeriodo(): void {
+  //   if (this.formPeriodo.invalid) { this.formPeriodo.markAllAsTouched(); return; }
+  //   this.guardandoPeriodo = true;
+  //   const dto = {
+  //     fechaApertura: this.formPeriodo.value.fechaApertura,
+  //     fechaLimite:   this.formPeriodo.value.fechaLimite,
+  //     instrucciones: this.formPeriodo.value.instrucciones || null
+  //   };
+
+  //   const obs = this.modoModalPeriodo === 'iniciar'
+  //     ? this.periodoService.iniciar(dto)
+  //     : this.periodoService.editar(this.periodoActivo!.id, dto);
+
+  //   obs.subscribe({
+  //     next: (p) => {
+  //       console.log('Periodo guardado:', p)
+  //       this.ngZone.run(() => {
+  //         this.periodoActivo    = p;
+  //         this.guardandoPeriodo = false;
+  //         this.modalPeriodoVisible = false;
+  //         this.cdr.detectChanges();
+  //         this.mostrarToast(
+  //           this.modoModalPeriodo === 'iniciar'
+  //             ? 'Periodo iniciado. Los profesores ya pueden ver las fechas.'
+  //             : 'Periodo actualizado correctamente.',
+  //           'success'
+  //         );
+  //       });
+  //     },
+  //     error: (err) => {
+  //       console.log('Error al guardar periodo:', err);
+  //       this.ngZone.run(() => {
+  //         this.guardandoPeriodo = false;
+  //         this.cdr.detectChanges();
+  //         this.mostrarToast(err?.error?.message ?? 'Error al guardar el periodo', 'error');
+  //       });
+  //     }
+  //   });
+  // }
+
   guardarPeriodo(): void {
     if (this.formPeriodo.invalid) { this.formPeriodo.markAllAsTouched(); return; }
     this.guardandoPeriodo = true;
     const dto = {
-      fechaApertura: this.formPeriodo.value.fechaApertura,
+      fechaApertura: this.fechaHoyISO, // ← siempre hoy
       fechaLimite:   this.formPeriodo.value.fechaLimite,
       instrucciones: this.formPeriodo.value.instrucciones || null
     };
@@ -274,8 +349,8 @@ export class SecretariaDashboardComponent implements OnInit {
     obs.subscribe({
       next: (p) => {
         this.ngZone.run(() => {
-          this.periodoActivo    = p;
-          this.guardandoPeriodo = false;
+          this.periodoActivo       = p;
+          this.guardandoPeriodo    = false;
           this.modalPeriodoVisible = false;
           this.cdr.detectChanges();
           this.mostrarToast(
@@ -416,5 +491,66 @@ export class SecretariaDashboardComponent implements OnInit {
   cerrarModalCerrar(): void {
     this.modalCerrarVisible = false;
     this.cdr.detectChanges();
+  }
+
+  // Agrega estas propiedades computed:
+  get fechaHoyISO(): string {
+    return new Date().toISOString().split('T')[0];
+  }
+
+  get fechaHoyFormateada(): string {
+    const hoy = new Date();
+    const meses = ['enero','febrero','marzo','abril','mayo','junio',
+                  'julio','agosto','septiembre','octubre','noviembre','diciembre'];
+    return `${hoy.getDate()} de ${meses[hoy.getMonth()]} de ${hoy.getFullYear()}`;
+  }
+
+  get fechaFinCicloISO(): string {
+    return `${this.anioCicloActual}-09-30`;
+  }
+
+  generarPdfReporte(reporte: ReporteResponse): void {
+    if (this.generandoPdfId) return;
+    this.generandoPdfId = reporte.id;
+    const id = reporte.id;
+
+    forkJoin({
+      cursos:        this.docenciaService.obtenerCursos(id),
+      productos:     this.docenciaService.obtenerProductos(id),
+      asignaturas:   this.docenciaService.obtenerAsignaturas(id),
+      tutorias:      this.formacionRhService.obtenerTutorias(id),
+      tesis:         this.formacionRhService.obtenerTesis(id),
+      proyectos:     this.investigacionService.obtenerProyectos(id),
+      publicaciones: this.investigacionService.obtenerPublicaciones(id),
+      desarrollo:    this.investigacionService.obtenerDesarrollo(id),
+      gestion:       this.gestionDifService.obtenerGestion(id),
+      difusion:      this.gestionDifService.obtenerDifusion(id),
+      distribucion:  this.distribucionService.obtener(id),
+    }).pipe(
+      switchMap(datos =>
+        forkJoin(
+          datos.proyectos.length > 0
+            ? datos.proyectos.map(p => this.investigacionService.obtenerIndicadores(p.id))
+            : [Promise.resolve([])]
+        ).pipe(
+          switchMap(indicadoresArrays => {
+            const indicadores = indicadoresArrays.flat();
+            const datosPdf: DatosPdf = { reporte, ...datos, indicadores };
+            return [datosPdf];
+          })
+        )
+      )
+    ).subscribe({
+      next: (datosPdf) => {
+        this.pdfService.generarReporte(datosPdf);
+        this.generandoPdfId = null;
+        this.cdr.detectChanges();
+      },
+      error: () => {
+        this.generandoPdfId = null;
+        this.cdr.detectChanges();
+        this.mostrarToast('Error al generar el PDF', 'error');
+      }
+    });
   }
 }

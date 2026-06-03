@@ -8,6 +8,7 @@
       placeholder="Escribe un resumen de tus actividades y cualquier comentario relevante para el coordinador..."
       [value]="comentarios"
       (input)="comentariosChange.emit($any($event.target).value)"
+      [disabled]="!editable"
       rows="7">
     </textarea>
   </div>

@@ -293,8 +293,37 @@ export class ReporteFormComponent implements OnInit, OnDestroy {
   confirmarEnvio(): void  { this.mostrarModalEnvio = true;  this.cdr.detectChanges(); }
   cancelarEnvio(): void   { this.mostrarModalEnvio = false; this.cdr.detectChanges(); }
 
+  // enviarARevision(): void {
+  //   if (!this.reporte) return;
+  //   this.enviando = true;
+  //   this.mostrarModalEnvio = false;
+  //   this.reporteService.enviarARevision(this.reporte.id).subscribe({
+  //     next: (updated) => {
+  //       this.ngZone.run(() => {
+  //         this.reporte = { ...updated };
+  //         this.enviando = false;
+  //         this.cdr.detectChanges();
+  //         this.mostrarToast('Reporte enviado a revisión exitosamente', 'success');
+  //       });
+  //     },
+  //     error: () => {
+  //       this.ngZone.run(() => {
+  //         this.enviando = false;
+  //         this.cdr.detectChanges();
+  //         this.mostrarToast('Error al enviar el reporte', 'error');
+  //       });
+  //     }
+  //   });
+  // }
+
   enviarARevision(): void {
     if (!this.reporte) return;
+
+    if (!this.periodoActivo || this.periodoActivo.estado !== 'ACTIVO') {
+      this.mostrarToast('No hay un periodo de entrega activo. No puedes enviar tu reporte por ahora.', 'error');
+      return;
+    }
+
     this.enviando = true;
     this.mostrarModalEnvio = false;
     this.reporteService.enviarARevision(this.reporte.id).subscribe({

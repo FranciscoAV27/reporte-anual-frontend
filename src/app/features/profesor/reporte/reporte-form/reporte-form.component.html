@@ -128,7 +128,7 @@
           </div>
 
           <!-- Aviso: reporte rechazado -->
-          <div class="aviso-item aviso-rechazo" *ngIf="reporte?.estado === 'RECHAZADO'">
+          <!-- <div class="aviso-item aviso-rechazo" *ngIf="reporte?.estado === 'RECHAZADO'">
             <div class="aviso-item-header">
               <div class="aviso-item-titulo">
                 <span class="aviso-dot dot-error"></span>
@@ -146,6 +146,18 @@
             <p class="aviso-item-desc">
               La secretaría ha revisado tu reporte y solicita correcciones. Revisa los detalles y realiza los cambios necesarios.
             </p>
+          </div> -->
+
+          <div class="aviso-item aviso-rechazo" *ngIf="reporte?.estado === 'RECHAZADO'">
+            <span class="aviso-dot dot-error"></span>
+            <div class="aviso-item-body">
+              <strong>Tu reporte requiere correcciones</strong>
+              <p class="aviso-item-desc">La secretaría ha revisado tu reporte y solicita correcciones. Revisa los detalles y realiza los cambios necesarios.</p>
+            </div>
+            <div class="aviso-item-actions">
+              <button class="btn-aviso-detalle" (click)="abrirModalRechazo()">Ver detalles</button>
+              <button class="btn-ir-reporte" (click)="setVista('form')">Ir a mi reporte →</button>
+            </div>
           </div>
 
         </div>
@@ -187,11 +199,22 @@
 
       <div class="sb-foot">
         <div class="sb-enviar-wrap">
+          <!-- <div class="sb-tooltip" *ngIf="!todasConcluidas">
+            Completa todas las secciones para habilitar este botón.
+          </div> -->
           <div class="sb-tooltip" *ngIf="!todasConcluidas">
             Completa todas las secciones para habilitar este botón.
           </div>
-          <button class="btn-enviar"
+          <div class="sb-tooltip" *ngIf="todasConcluidas && (!periodoActivo || periodoActivo.estado !== 'ACTIVO')">
+            No hay un periodo de entrega activo.
+          </div>
+          <!-- <button class="btn-enviar"
             [disabled]="!todasConcluidas || enviando || !formularioEditable"
+            (click)="confirmarEnvio()">
+            {{ enviando ? 'Enviando...' : 'Enviar a revisión →' }}
+          </button> -->
+          <button class="btn-enviar"
+            [disabled]="!todasConcluidas || enviando || !formularioEditable || !periodoActivo || periodoActivo.estado !== 'ACTIVO'"
             (click)="confirmarEnvio()">
             {{ enviando ? 'Enviando...' : 'Enviar a revisión →' }}
           </button>
@@ -208,13 +231,32 @@
       <div class="content-inner">
 
         <!-- Cabecera de sección -->
-        <div class="sec-header">
+        <!-- <div class="sec-header">
           <div class="sec-num-badge">
             {{ seccionActiva + 1 }} de 7 · {{ secciones[seccionActiva].label }}
           </div>
           <h2 class="sec-title">{{ secciones[seccionActiva].label }}</h2>
           <p class="sec-desc">{{ secciones[seccionActiva].descripcion }}</p>
           <div class="sec-done-note" *ngIf="esConcluida(seccionActiva + 1)">
+            ✓ Esta sección está marcada como concluida. Puedes seguir editando.
+          </div>
+        </div> -->
+
+        <!-- Cabecera de sección -->
+        <div class="sec-header">
+          <div class="sec-num-badge">
+            {{ seccionActiva + 1 }} de 7 · {{ secciones[seccionActiva].label }}
+          </div>
+          <h2 class="sec-title">{{ secciones[seccionActiva].label }}</h2>
+          <p class="sec-desc">{{ secciones[seccionActiva].descripcion }}</p>
+
+          <!-- Reporte no editable — se muestra aquí arriba -->
+          <div class="alert alert-info sec-readonly" *ngIf="!formularioEditable">
+            ℹ️ Este reporte está en estado <strong>{{ estadoLabel }}</strong> y no puede editarse.
+          </div>
+
+          <!-- Sección concluida — solo cuando el reporte sí es editable -->
+          <div class="sec-done-note" *ngIf="formularioEditable && esConcluida(seccionActiva + 1)">
             ✓ Esta sección está marcada como concluida. Puedes seguir editando.
           </div>
         </div>
@@ -336,9 +378,9 @@
         </div>
 
         <!-- Reporte no editable -->
-        <div class="alert alert-info sec-readonly" *ngIf="!formularioEditable">
+        <!-- <div class="alert alert-info sec-readonly" *ngIf="!formularioEditable">
           ℹ️ Este reporte está en estado <strong>{{ estadoLabel }}</strong> y no puede editarse.
-        </div>
+        </div> -->
 
       </div>
     </div>

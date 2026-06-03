@@ -100,3 +100,10 @@ html, body {
   height: 100%;
   object-fit: contain;
 }
+
+.field-textarea:disabled {
+  background: #f5f5f5;
+  color: #888;
+  cursor: not-allowed;
+  resize: none;
+}

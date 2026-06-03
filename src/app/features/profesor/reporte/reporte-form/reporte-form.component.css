@@ -364,93 +364,44 @@
 .stat-card.estado-aceptado   { border-top: 3px solid #18B32A; }
 .stat-card.estado-rechazado  { border-top: 3px solid #B31818; }
 
-/* ── Aviso de rechazo ──────────────────────────────────────── */
-.aviso-rechazo {
-  display: flex;
-  align-items: flex-start;
-  gap: 14px;
-  background: #FDEAEA;
-  border: 1.5px solid rgba(179,24,24,.25);
-  border-left: 4px solid #B31818;
-  border-radius: 10px;
-  padding: 16px 20px;
-  margin-bottom: 20px;
-}
-.aviso-icon { font-size: 22px; flex-shrink: 0; margin-top: 2px; }
-.aviso-body strong { display: block; font-size: 14px; font-weight: 700; color: #B31818; margin-bottom: 6px; }
-.aviso-body p { font-size: 13px; color: #555; line-height: 1.5; margin-bottom: 12px; }
-.btn-ir-reporte {
-  display: inline-flex; align-items: center; gap: 5px;
-  background: #B31818; color: white;
-  border: none; padding: 7px 14px; border-radius: 7px;
-  font-size: 12px; font-weight: 600; cursor: pointer;
-  transition: background .15s;
-}
-.btn-ir-reporte:hover { background: #8b1111; }
-
-/* ── Empty state en avisos ─────────────────────────────────── */
-.empty-state { text-align: center; padding: 28px 20px; color: var(--ink-soft); }
-.empty-state .icon { margin-bottom: 8px; }
-.empty-state p { font-size: 13px; }
-
-/* ── Ajustes sutiles home ─────────────────────────── */
-.periodo-cerrado {
-  background: #f5f5f5;
-  border: 1.5px solid #ddd;
-}
-.periodo-cerrado .periodo-info strong { color: var(--ink-mid); }
-.periodo-cerrado .periodo-info span   { color: var(--ink-soft); }
-
-.aviso-rechazo {
-  background: #FDEAEA;
-  border: 1.5px solid rgba(179,24,24,.2);
-  border-left: 4px solid #B31818;
-  border-radius: 10px;
-  padding: 16px 20px;
-  margin-bottom: 20px;
-}
-.aviso-rechazo strong { display: block; font-size: 14px; font-weight: 700; color: #B31818; margin-bottom: 6px; }
-.aviso-rechazo p { font-size: 13px; color: var(--ink-mid); line-height: 1.5; margin-bottom: 12px; }
-.btn-ir-reporte {
-  background: #B31818; color: white; border: none;
-  padding: 7px 14px; border-radius: 7px;
-  font-size: 12px; font-weight: 600; cursor: pointer;
-  transition: background .15s;
-}
-.btn-ir-reporte:hover { background: #8b1111; }
-.badge-no-iniciado { background: #f0f0f0; color: #7F7F7F; }
-
-/* ── Avisos ────────────────────────────────────────────────── */
+/* ── Aviso de rechazo (limpio, sin duplicados) ─────────────── */
 .aviso-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
   padding: 14px 20px;
   border-left: 4px solid transparent;
   border-bottom: 1px solid var(--border);
+  border-radius: 8px;
 }
 .aviso-item:last-child { border-bottom: none; }
-
 .aviso-rechazo { border-left-color: var(--danger); background: #fffafa; }
-.aviso-periodo { border-left-color: var(--brand); background: var(--brand-faint); }
 
-.aviso-item-header {
-  display: flex; align-items: center;
-  justify-content: space-between; gap: 12px;
-  margin-bottom: 6px; flex-wrap: wrap;
+.aviso-item-body {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  flex: 1;
 }
-.aviso-item-titulo {
-  display: flex; align-items: center; gap: 8px;
+.aviso-item-body strong { font-size: 13px; color: var(--ink); }
+.aviso-item-desc { font-size: 12px; color: var(--ink-soft); margin: 0; line-height: 1.5; }
+
+.aviso-item-actions {
+  display: flex;
+  gap: 8px;
+  flex-shrink: 0;
+  align-items: center;
 }
+
 .aviso-dot {
   width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0;
 }
 .dot-error { background: var(--danger); }
 .dot-info  { background: var(--brand); }
 
-.aviso-item-titulo strong { font-size: 13px; color: var(--ink); }
-.aviso-item-desc { font-size: 12px; color: var(--ink-soft); line-height: 1.5; }
-.aviso-item-actions { display: flex; gap: 8px; flex-shrink: 0; }
-
 .btn-aviso-detalle {
-  background: none; border: 1.5px solid var(--border);
+  background: none;
+  border: 1.5px solid var(--border);
   padding: 5px 12px; border-radius: 6px;
   font-size: 12px; font-weight: 600; color: var(--ink-mid);
   cursor: pointer; transition: all .15s;
@@ -464,6 +415,22 @@
   transition: background .15s;
 }
 .btn-ir-reporte:hover { background: #8b1111; }
+
+/* ── Empty state en avisos ─────────────────────────────────── */
+.empty-state { text-align: center; padding: 28px 20px; color: var(--ink-soft); }
+.empty-state .icon { margin-bottom: 8px; }
+.empty-state p { font-size: 13px; }
+
+/* ── Ajustes sutiles home ───────────────────────────────────── */
+.periodo-cerrado {
+  background: #f5f5f5;
+  border: 1.5px solid #ddd;
+}
+.periodo-cerrado .periodo-info strong { color: var(--ink-mid); }
+.periodo-cerrado .periodo-info span   { color: var(--ink-soft); }
+
+.badge-no-iniciado { background: #f0f0f0; color: #7F7F7F; }
+
 
 /* ── Detalles modal ────────────────────────────────────────── */
 .detalle-row {
