@@ -14,9 +14,13 @@
     <div class="topbar-divider"></div>
     <nav class="topbar-nav">
       <button class="topbar-nav-btn" [class.active]="vistaActiva === 'home'"     (click)="setVista('home')">Inicio</button>
-      <button class="topbar-nav-btn" [class.active]="vistaActiva === 'form'"
+      <!-- <button class="topbar-nav-btn" [class.active]="vistaActiva === 'form'"
         (click)="setVista('form')">
         Mi Reporte {{ anioActual - 1 }}-{{ anioActual }}
+      </button> -->
+      <button class="topbar-nav-btn" [class.active]="vistaActiva === 'form'"
+        (click)="setVista('form')">
+        Mi Reporte {{ anioMostrar - 1 }}-{{ anioMostrar }}
       </button>
       <button class="topbar-nav-btn" [class.active]="vistaActiva === 'historial'"(click)="setVista('historial')">Historial</button>
     </nav>
@@ -98,11 +102,19 @@
             Aún no has iniciado tu reporte
           </div>
         </div>
-        <div class="stat-card">
+       
+        <!-- <div class="stat-card">
           <div class="stat-label">Año del reporte</div>
           <div class="stat-value">{{ anioActual }}</div>
           <div class="stat-meta">Oct {{ anioActual - 1 }} – Sep {{ anioActual }}</div>
+        </div> -->
+
+        <div class="stat-card">
+          <div class="stat-label">Año del reporte</div>
+          <div class="stat-value" style="font-size:22px">{{ anioMostrar - 1 }}–{{ anioMostrar }}</div>
+          <div class="stat-meta">Oct {{ anioMostrar - 1 }} – Sep {{ anioMostrar }}</div>
         </div>
+       
         <div class="stat-card" [class.accent]="progresoPorcentaje === 100">
           <div class="stat-label">Progreso del reporte</div>
           <div class="stat-value">{{ progresoPorcentaje }}%</div>
@@ -122,32 +134,17 @@
         <div class="section-card-body">
 
           <!-- Sin avisos -->
+          <!-- <div class="alert alert-info"
+            //*ngIf="reporte?.estado !== 'RECHAZADO' && reporte?.estado !== 'ACEPTADO'">
+            📢 No hay avisos activos en este momento.
+          </div> -->
+
           <div class="alert alert-info"
-            *ngIf="reporte?.estado !== 'RECHAZADO' && reporte?.estado !== 'ACEPTADO'">
+              *ngIf="reporte?.estado !== 'RECHAZADO' && !(reporteAnteriorAceptado && esPrimerAccesoNuevoReporte)">
             📢 No hay avisos activos en este momento.
           </div>
 
           <!-- Aviso: reporte rechazado -->
-          <!-- <div class="aviso-item aviso-rechazo" *ngIf="reporte?.estado === 'RECHAZADO'">
-            <div class="aviso-item-header">
-              <div class="aviso-item-titulo">
-                <span class="aviso-dot dot-error"></span>
-                <strong>Tu reporte requiere correcciones</strong>
-              </div>
-              <div class="aviso-item-actions">
-                <button class="btn-aviso-detalle" (click)="abrirModalRechazo()">
-                  Ver detalles
-                </button>
-                <button class="btn-ir-reporte" (click)="setVista('form')">
-                  Ir a mi reporte →
-                </button>
-              </div>
-            </div>
-            <p class="aviso-item-desc">
-              La secretaría ha revisado tu reporte y solicita correcciones. Revisa los detalles y realiza los cambios necesarios.
-            </p>
-          </div> -->
-
           <div class="aviso-item aviso-rechazo" *ngIf="reporte?.estado === 'RECHAZADO'">
             <span class="aviso-dot dot-error"></span>
             <div class="aviso-item-body">
@@ -157,6 +154,19 @@
             <div class="aviso-item-actions">
               <button class="btn-aviso-detalle" (click)="abrirModalRechazo()">Ver detalles</button>
               <button class="btn-ir-reporte" (click)="setVista('form')">Ir a mi reporte →</button>
+            </div>
+          </div>
+
+          <!-- Aviso: reporte anterior aceptado -->
+          <div class="aviso-item aviso-aceptado" *ngIf="reporteAnteriorAceptado && esPrimerAccesoNuevoReporte">
+            <span class="aviso-dot dot-success"></span>
+            <div class="aviso-item-body">
+              <strong>Tu reporte {{ reporteAnteriorAceptado.anio - 1 }}-{{ reporteAnteriorAceptado.anio }} fue aceptado</strong>
+              <p class="aviso-item-desc">
+                Aceptado el {{ formatFecha(reporteAnteriorAceptado.aprobadoEn) }} por
+                {{ reporteAnteriorAceptado.aprobadoPorNombre }} {{ reporteAnteriorAceptado.aprobadoPorApellidos ?? '' }}.
+                Ya puedes comenzar a llenar tu nuevo reporte.
+              </p>
             </div>
           </div>
 
@@ -388,7 +398,7 @@
   </div>
 
   <!-- ══ VISTA: HISTORIAL ══════════════════════════════════════ -->
-  <main class="main-content" *ngIf="vistaActiva === 'historial'">
+  <!-- <main class="main-content" *ngIf="vistaActiva === 'historial'">
     <div class="subview">
       <div class="page-header">
         <h1>Historial de reportes</h1>
@@ -402,6 +412,135 @@
           </div>
         </div>
       </div>
+    </div>
+  </main> -->
+
+  <main class="main-content" *ngIf="vistaActiva === 'historial'">
+    <div class="subview">
+
+      <div class="page-header">
+        <h1>Historial de reportes</h1>
+        <p>Consulta tus reportes anuales aceptados de ciclos anteriores</p>
+      </div>
+
+      <!-- Cargando -->
+      <div class="feedback-state" *ngIf="cargandoHistorial">
+        <div class="spinner"></div>
+        <p>Cargando historial...</p>
+      </div>
+
+      <!-- Sin historial -->
+      <div class="section-card" *ngIf="!cargandoHistorial && historial.length === 0">
+        <div class="section-card-body">
+          <div class="empty-state">
+            <div class="icon">📁</div>
+            <p>No tienes reportes aceptados en ciclos anteriores.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tabla de historial -->
+      <!-- <div class="section-card" *ngIf="!cargandoHistorial && historial.length > 0">
+        <div class="section-card-header" style="cursor:default;pointer-events:none">
+          <div class="section-number">📋</div>
+          <h3>Reportes aceptados</h3>
+        </div>
+        <div class="section-card-body">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Ciclo escolar</th>
+                <th>Fecha de entrega</th>
+                <th>Fecha de aceptación</th>
+                <th>Aceptado por</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let r of historial">
+                <td><strong>{{ r.anio - 1 }}-{{ r.anio }}</strong></td>
+                <td>{{ formatFecha(r.enviadoEn) }}</td>
+                <td>{{ formatFecha(r.aprobadoEn) }}</td>
+                <td>{{ r.aprobadoPorNombre ?? '—' }} {{ r.aprobadoPorApellidos ?? '' }}</td>
+                <td class="td-actions">
+                  <button class="btn btn-outline btn-sm"
+                    (click)="generarPdfHistorial(r)"
+                    [disabled]="generandoPdfHistorialId === r.id">
+                    {{ generandoPdfHistorialId === r.id ? '⏳...' : '👁 Ver PDF' }}
+                  </button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div> -->
+
+      <!-- <div class="section-card" *ngIf="!cargandoHistorial && historial.length > 0">
+        <div class="section-card-header" style="cursor:default;pointer-events:none">
+          <div class="section-number">📋</div>
+          <h3>Reportes aceptados</h3>
+        </div>
+        <div class="section-card-body">
+          <div class="table-wrap">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Ciclo escolar</th>
+                  <th>Fecha de entrega</th>
+                  <th>Fecha de aceptación</th>
+                  <th>Aceptado por</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let r of historial">
+                  <td><strong>{{ r.anio - 1 }}-{{ r.anio }}</strong></td>
+                  <td>{{ formatFecha(r.enviadoEn) }}</td>
+                  <td>{{ formatFecha(r.aprobadoEn) }}</td>
+                  <td>{{ r.aprobadoPorNombre ?? '—' }} {{ r.aprobadoPorApellidos ?? '' }}</td>
+                  <td class="td-actions">
+                    <button class="btn btn-outline btn-sm"
+                      (click)="generarPdfHistorial(r)"
+                      [disabled]="generandoPdfHistorialId === r.id">
+                      {{ generandoPdfHistorialId === r.id ? '⏳...' : '👁 Ver PDF' }}
+                    </button>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div> -->
+
+      <div class="table-wrap" *ngIf="!cargandoHistorial && historial.length > 0">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Ciclo escolar</th>
+              <th>Fecha de entrega</th>
+              <th>Fecha de aceptación</th>
+              <th>Aceptado por</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let r of historial">
+              <td><strong>{{ r.anio - 1 }}-{{ r.anio }}</strong></td>
+              <td>{{ formatFecha(r.enviadoEn) }}</td>
+              <td>{{ formatFecha(r.aprobadoEn) }}</td>
+              <td>{{ r.aprobadoPorNombre ?? '—' }} {{ r.aprobadoPorApellidos ?? '' }}</td>
+              <td class="td-actions">
+                <button class="btn btn-outline btn-sm"
+                  (click)="generarPdfHistorial(r)"
+                  [disabled]="generandoPdfHistorialId === r.id">
+                  {{ generandoPdfHistorialId === r.id ? '⏳...' : '👁 Ver PDF' }}
+                </button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
     </div>
   </main>
 

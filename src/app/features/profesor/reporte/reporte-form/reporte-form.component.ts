@@ -14,15 +14,6 @@ import { DifusionComponent } from '../sections/difusion/difusion.component';
 import { ComentariosComponent } from '../sections/comentarios/comentarios.component';
 import { DistribucionTiempoComponent } from '../sections/distribucion-tiempo/distribucion-tiempo.component';
 
-// import { PdfService } from '../../../../core/services/pdf.service';
-// import { ReportePdfComponent } from '../../pdf/reporte-pdf.component';
-// import { DocenciaService } from '../../services/docencia.service';
-// import { FormacionRhService } from '../../services/formacion-rh.service';
-// import { InvestigacionService } from '../../services/investigacion.service';
-// import { GestionDifusionService } from '../../services/gestion-difusion.service';
-// import { DistribucionTiempoService } from '../../services/distribucion-tiempo.service';
-// import { forkJoin } from 'rxjs';
-
 // Agrega estos imports:
 import { PdfService, DatosPdf } from '../../../../core/services/pdf.service';
 import { DocenciaService } from '../../services/docencia.service';
@@ -100,45 +91,84 @@ export class ReporteFormComponent implements OnInit, OnDestroy {
   modalRechazoVisible = false;
   modalPeriodoVisible = false;
 
-  // ── Init ──────────────────────────────────────────────────
+  historial: ReporteResponse[] = [];
+  cargandoHistorial = false;
+  generandoPdfHistorialId: number | null = null;
+
+  reporteAnteriorAceptado: ReporteResponse | null = null;
+
   ngOnInit(): void {
     this.reporteService.obtenerMisReportes().subscribe({
       next: (reportes) => {
-        const existente = reportes.find(r => r.anio === this.anioActual);
-        if (existente) {
-          this.reporte = existente;
-          this.poblarTextos(existente);
-        } else {
-          this.reporteService.crear({ anio: this.anioActual }).subscribe({
-            next: (nuevo) => {
-              this.ngZone.run(() => { this.reporte = nuevo; this.cargando = false; this.cdr.detectChanges(); });
-            },
-            error: (err) => {
-              this.ngZone.run(() => { this.errorMsg = `No se pudo crear el reporte. (${err.status})`; this.cargando = false; this.cdr.detectChanges(); });
-            }
-          });
+        const anioSiguiente = this.anioActual + 1;
+
+        const reporteActual   = reportes.find(r => r.anio === this.anioActual);
+        const reporteSiguiente = reportes.find(r => r.anio === anioSiguiente);
+
+        if (reporteActual?.estado === 'ACEPTADO') {
+          this.reporteAnteriorAceptado = reporteActual;
+
+          if (reporteSiguiente) {
+            this.reporte = reporteSiguiente;
+            this.poblarTextos(reporteSiguiente);
+            this.cargarPeriodoActivo();
+            this.cargando = false;
+            this.cdr.detectChanges();
+          } else {
+            this.reporteService.crear({ anio: anioSiguiente }).subscribe({
+              next: (nuevo) => {
+                this.ngZone.run(() => {
+                  this.reporte = nuevo;
+                  this.cargarPeriodoActivo();
+                  this.cargando = false;
+                  this.cdr.detectChanges();
+                });
+              },
+              error: (err) => {
+                this.ngZone.run(() => {
+                  this.errorMsg = `No se pudo crear el reporte. (${err.status})`;
+                  this.cargando = false;
+                  this.cdr.detectChanges();
+                });
+              }
+            });
+          }
+          return;
         }
-        this.cargando = false;
-        this.cdr.detectChanges();
+
+        if (reporteActual) {
+          this.reporte = reporteActual;
+          this.poblarTextos(reporteActual);
+          this.cargarPeriodoActivo();
+          this.cargando = false;
+          this.cdr.detectChanges();
+          return;
+        }
+
+        this.reporteService.crear({ anio: this.anioActual }).subscribe({
+          next: (nuevo) => {
+            this.ngZone.run(() => {
+              this.reporte = nuevo;
+              this.cargarPeriodoActivo();
+              this.cargando = false;
+              this.cdr.detectChanges();
+            });
+          },
+          error: (err) => {
+            this.ngZone.run(() => {
+              this.errorMsg = `No se pudo crear el reporte. (${err.status})`;
+              this.cargando = false;
+              this.cdr.detectChanges();
+            });
+          }
+        });
       },
       error: (err) => {
-        this.ngZone.run(() => { this.errorMsg = `Error al cargar reportes. (${err.status})`; this.cargando = false; this.cdr.detectChanges(); });
-      }
-    });
-
-    // this.periodoService.obtenerActivo().subscribe({
-    //   next: (p) => { this.ngZone.run(() => { this.periodoActivo = p; this.cdr.detectChanges(); }); },
-    //   error: () => { this.periodoActivo = null; }
-    // });
-
-    this.periodoService.obtenerActivo().subscribe({
-      next: (p) => {
-        console.log('Periodo recibido:', p); // ← temporal
-        this.ngZone.run(() => { this.periodoActivo = p; this.cdr.detectChanges(); });
-      },
-      error: (err) => {
-        console.log('Error periodo:', err); // ← temporal
-        this.periodoActivo = null;
+        this.ngZone.run(() => {
+          this.errorMsg = `Error al cargar reportes. (${err.status})`;
+          this.cargando = false;
+          this.cdr.detectChanges();
+        });
       }
     });
 
@@ -188,6 +218,7 @@ export class ReporteFormComponent implements OnInit, OnDestroy {
   // ── Navegación ─────────────────────────────────────────────
   setVista(v: Vista): void {
     this.vistaActiva = v;
+    if (v === 'historial') this.cargarHistorial();
     if (v === 'form') this.seccionActiva = 0;
     this.cdr.detectChanges();
   }
@@ -293,29 +324,6 @@ export class ReporteFormComponent implements OnInit, OnDestroy {
   confirmarEnvio(): void  { this.mostrarModalEnvio = true;  this.cdr.detectChanges(); }
   cancelarEnvio(): void   { this.mostrarModalEnvio = false; this.cdr.detectChanges(); }
 
-  // enviarARevision(): void {
-  //   if (!this.reporte) return;
-  //   this.enviando = true;
-  //   this.mostrarModalEnvio = false;
-  //   this.reporteService.enviarARevision(this.reporte.id).subscribe({
-  //     next: (updated) => {
-  //       this.ngZone.run(() => {
-  //         this.reporte = { ...updated };
-  //         this.enviando = false;
-  //         this.cdr.detectChanges();
-  //         this.mostrarToast('Reporte enviado a revisión exitosamente', 'success');
-  //       });
-  //     },
-  //     error: () => {
-  //       this.ngZone.run(() => {
-  //         this.enviando = false;
-  //         this.cdr.detectChanges();
-  //         this.mostrarToast('Error al enviar el reporte', 'error');
-  //       });
-  //     }
-  //   });
-  // }
-
   enviarARevision(): void {
     if (!this.reporte) return;
 
@@ -360,14 +368,6 @@ export class ReporteFormComponent implements OnInit, OnDestroy {
       ?.split(' ').slice(0, 2).map(n => n[0]).join('').toUpperCase() ?? 'P';
   }
 
-  // get estadoBadgeClass(): string {
-  //   const map: Record<string, string> = {
-  //     BORRADOR: 'badge-borrador', PENDIENTE_VALIDACION: 'badge-pendiente',
-  //     ACEPTADO: 'badge-aceptado', RECHAZADO: 'badge-rechazado',
-  //   };
-  //   return map[this.reporte?.estado ?? ''] ?? 'badge-borrador';
-  // }
-
   get estadoBadgeClass(): string {
     if (this.reporte?.estado === 'BORRADOR' && this.esPrimerAcceso) return 'badge-no-iniciado';
     const m: Record<string, string> = {
@@ -378,14 +378,6 @@ export class ReporteFormComponent implements OnInit, OnDestroy {
     };
     return m[this.reporte?.estado ?? ''] ?? 'badge-no-iniciado';
   }
-
-  // get estadoLabel(): string {
-  //   const map: Record<string, string> = {
-  //     BORRADOR: 'Borrador', PENDIENTE_VALIDACION: 'Pendiente de validación',
-  //     ACEPTADO: 'Aceptado', RECHAZADO: 'Rechazado',
-  //   };
-  //   return map[this.reporte?.estado ?? ''] ?? 'Borrador';
-  // }
 
   get estadoLabel(): string {
     if (this.reporte?.estado === 'BORRADOR' && this.esPrimerAcceso) return 'No iniciado';
@@ -408,52 +400,6 @@ export class ReporteFormComponent implements OnInit, OnDestroy {
   get formularioEditable(): boolean {
     return this.reporte?.estado === 'BORRADOR' || this.reporte?.estado === 'RECHAZADO';
   }
-
-  // previsualizarPdf(): void {
-  //   if (!this.reporte || this.generandoPdf) return;
-  //   this.generandoPdf = true;
-  //   const id = this.reporte.id;
-
-  //   forkJoin({
-  //     cursos:       this.docenciaService.obtenerCursos(id),
-  //     productos:    this.docenciaService.obtenerProductos(id),
-  //     asignaturas:  this.docenciaService.obtenerAsignaturas(id),
-  //     tutorias:     this.formacionRhService.obtenerTutorias(id),
-  //     tesis:        this.formacionRhService.obtenerTesis(id),
-  //     proyectos:    this.investigacionService.obtenerProyectos(id),
-  //     publicaciones:this.investigacionService.obtenerPublicaciones(id),
-  //     desarrollo:   this.investigacionService.obtenerDesarrollo(id),
-  //     gestion:      this.gestionDifService.obtenerGestion(id),
-  //     difusion:     this.gestionDifService.obtenerDifusion(id),
-  //     distribucion: this.distribucionService.obtener(id),
-  //   }).subscribe({
-  //     next: async (datos) => {
-  //       // Cargar indicadores de todos los proyectos
-  //       if (datos.proyectos.length > 0) {
-  //         const indicadoresArrays = await Promise.all(
-  //           datos.proyectos.map(p =>
-  //             this.investigacionService.obtenerIndicadores(p.id).toPromise()
-  //           )
-  //         );
-  //         (datos as any).indicadores = indicadoresArrays.flat();
-  //       } else {
-  //         (datos as any).indicadores = [];
-  //       }
-  //       this.datosPdf = datos;
-  //       this.cdr.detectChanges();
-  //       setTimeout(async () => {
-  //         await this.pdfService.generarPDF('reporte-pdf-content', `Reporte_${this.reporte!.anio}_${this.reporte!.profesorNombre}`);
-  //         this.generandoPdf = false;
-  //         this.cdr.detectChanges();
-  //       }, 500);
-  //     },
-  //     error: () => {
-  //       this.generandoPdf = false;
-  //       this.cdr.detectChanges();
-  //       this.mostrarToast('Error al generar el PDF', 'error');
-  //     }
-  //   });
-  // }
 
   // Método:
   previsualizarPdf(): void {
@@ -542,5 +488,97 @@ export class ReporteFormComponent implements OnInit, OnDestroy {
     this.modalRechazoVisible = false;
     this.setVista('form');
     this.cdr.detectChanges();
+  }
+
+  cargarHistorial(): void {
+    if (this.historial.length > 0) return; // ya cargado
+    this.cargandoHistorial = true;
+    this.reporteService.obtenerHistorial().subscribe({
+      next: (data) => {
+        this.ngZone.run(() => {
+          this.historial = data;
+          this.cargandoHistorial = false;
+          this.cdr.detectChanges();
+        });
+      },
+      error: () => {
+        this.ngZone.run(() => {
+          this.cargandoHistorial = false;
+          this.cdr.detectChanges();
+        });
+      }
+    });
+  }
+
+  generarPdfHistorial(reporte: ReporteResponse): void {
+    if (this.generandoPdfHistorialId) return;
+    this.generandoPdfHistorialId = reporte.id;
+    const id = reporte.id;
+
+    forkJoin({
+      cursos:        this.docenciaService.obtenerCursos(id),
+      productos:     this.docenciaService.obtenerProductos(id),
+      asignaturas:   this.docenciaService.obtenerAsignaturas(id),
+      tutorias:      this.formacionRhService.obtenerTutorias(id),
+      tesis:         this.formacionRhService.obtenerTesis(id),
+      proyectos:     this.investigacionService.obtenerProyectos(id),
+      publicaciones: this.investigacionService.obtenerPublicaciones(id),
+      desarrollo:    this.investigacionService.obtenerDesarrollo(id),
+      gestion:       this.gestionDifService.obtenerGestion(id),
+      difusion:      this.gestionDifService.obtenerDifusion(id),
+      distribucion:  this.distribucionService.obtener(id),
+    }).pipe(
+      switchMap(datos =>
+        forkJoin(
+          datos.proyectos.length > 0
+            ? datos.proyectos.map(p => this.investigacionService.obtenerIndicadores(p.id))
+            : [Promise.resolve([])]
+        ).pipe(
+          switchMap(indicadoresArrays => {
+            const indicadores = indicadoresArrays.flat();
+            const datosPdf: DatosPdf = { reporte, ...datos, indicadores };
+            return [datosPdf];
+          })
+        )
+      )
+    ).subscribe({
+      next: (datosPdf) => {
+        this.pdfService.generarReporte(datosPdf);
+        this.generandoPdfHistorialId = null;
+        this.cdr.detectChanges();
+      },
+      error: () => {
+        this.generandoPdfHistorialId = null;
+        this.cdr.detectChanges();
+        this.mostrarToast('Error al generar el PDF', 'error');
+      }
+    });
+  }
+
+  get anioMostrar(): number {
+    return this.reporte?.anio ?? this.anioActual;
+  }
+
+  get esPrimerAccesoNuevoReporte(): boolean {
+    if (!this.reporte?.creadoEn || !this.reporte?.actualizadoEn) return true;
+    const creado      = new Date(this.reporte.creadoEn).getTime();
+    const actualizado = new Date(this.reporte.actualizadoEn).getTime();
+    return Math.abs(actualizado - creado) < 60000;
+  }
+
+  private cargarPeriodoActivo(): void {
+    this.periodoService.obtenerActivo().subscribe({
+      next: (p) => {
+        this.ngZone.run(() => {
+          if (p && this.reporte && p.anio !== this.reporte.anio) {
+            this.periodoActivo = null;
+          } else {
+            this.periodoActivo = p;
+          }
+          this.cdr.detectChanges();
+        });
+      },
+      error: () => { this.periodoActivo = null; }
+    });
   }
 }

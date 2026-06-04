@@ -40,4 +40,8 @@ export class ReporteService {
   touch(id: number): Observable<void> {
     return this.http.patch<void>(`${this.base}/${id}/touch`, {});
   }
+
+  obtenerHistorial(): Observable<ReporteResponse[]> {
+    return this.http.get<ReporteResponse[]>(`${this.base}/mis-reportes/historial`);
+  }
 }

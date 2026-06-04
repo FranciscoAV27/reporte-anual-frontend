@@ -254,6 +254,7 @@ export class SecretariaDashboardComponent implements OnInit {
   setVista(v: Vista): void {
     this.vistaActiva = v;
     this.cdr.detectChanges();
+    this.refrescarDatos();
   }
 
   // ── Periodo ────────────────────────────────────────────────
@@ -550,6 +551,24 @@ export class SecretariaDashboardComponent implements OnInit {
         this.generandoPdfId = null;
         this.cdr.detectChanges();
         this.mostrarToast('Error al generar el PDF', 'error');
+      }
+    });
+  }
+
+  refrescarDatos(): void {
+    this.secretariaService.obtenerPendientes().subscribe({
+      next: (data) => {
+        this.ngZone.run(() => { this.pendientes = data; this.cdr.detectChanges(); });
+      }
+    });
+    this.secretariaService.obtenerTodosPorAnio(this.anioCicloActual).subscribe({
+      next: (data) => {
+        this.ngZone.run(() => { this.todos = data; this.cdr.detectChanges(); });
+      }
+    });
+    this.secretariaService.obtenerStats(this.anioCicloActual).subscribe({
+      next: (s) => {
+        this.ngZone.run(() => { this.stats = s; this.cdr.detectChanges(); });
       }
     });
   }
